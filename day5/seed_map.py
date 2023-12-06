@@ -41,7 +41,6 @@ def main():
                 range_len = int(maps[2])
                 if (curr_input >= source and
                         curr_input < source + range_len):
-                    print(maps)
                     delta = destination - source
                 else:
                     continue
