@@ -63,6 +63,9 @@ def main():
             # x, y
             starting_coords = [curr_line.index('S'), line_idx]
         maze.append(curr_line)
+    new_maze = []
+    for yvalues in range(len(maze) + 1):
+        new_maze.append(list('.'*len(maze[0])))
 
     # maze should be built now, and we should have the starting point from 'S'
     # now need to do traversal in every possible direction from 'S' and then
@@ -136,6 +139,16 @@ def main():
     # create the dict that contains all edges for a given y coordinate:
     edges_at_y = {}
     for coord in pipe_loop:
+        if maze[coord[1]][coord[0]] == '7':
+            new_maze[coord[1]][coord[0]] = '┐'
+        elif maze[coord[1]][coord[0]] == 'J':
+            new_maze[coord[1]][coord[0]] = '┘'
+        elif maze[coord[1]][coord[0]] == 'F':
+            new_maze[coord[1]][coord[0]] = '┌'
+        elif maze[coord[1]][coord[0]] == 'L':
+            new_maze[coord[1]][coord[0]] = '└'
+        else:
+            new_maze[coord[1]][coord[0]] = maze[coord[1]][coord[0]]
         if coord[1] in edges_at_y.keys():
             edges_at_y[coord[1]] += [coord]
         else:
@@ -151,7 +164,10 @@ def main():
         enclosed.append(enclosed_inline[1])
         count += enclosed_inline[0]
 
-    print(count)
+    for lineabc in new_maze:
+        print(''.join(lineabc))
+
+    print(count, enclosed)
     return count
 
 
@@ -168,6 +184,7 @@ def get_next_node(curr_node, directions, prev_node, maze):
 
 def find_gaps(line, edges, edge_key):
     # Reminder that the edges are pre sorted in main
+    # if edge_key == 5:
     x_values = []
     count = 0
     tiles = []
@@ -191,29 +208,26 @@ def find_gaps(line, edges, edge_key):
         walls.append(wall)
         x += 1
 
-    # now have list of walls, if even find all values in between, if odd return [0, []]
-    if len(walls) % 2 == 1:
-        return [0, []]
-
+    print(walls)
+    # now have list of walls, if even find all values in between
     tiles = []
     walls_crossed = 0
-    for i in range(len(walls)):
+    for i, wall in enumerate(walls):
         # find the number in between end of wall i and start of wall i + 1
-        if (walls_crossed + len(walls[i]) % 2 == 1):
+        walls_crossed += 1
+        if (walls_crossed) % 2 == 1:
             # try finding gap between curr wall and next
             if i + 1 < len(walls):
                 start = walls[i][-1]
                 end = walls[i + 1][0]
                 count += end - start - 1
-                for j in range(end - start):
+                for j in range(end - start - 1):
                     tiles.append([start + 1 + j, edge_key])
 
-        if edge_key == 6:
-            print(walls_crossed)
-            print(tiles)
-            walls_crossed += len(walls[i])
+        # print(tiles)
 
     return [count, tiles]
+    # return [0, []]
 
 
 if __name__ == "__main__":
