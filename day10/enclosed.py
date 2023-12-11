@@ -155,6 +155,9 @@ def main():
             edges_at_y[coord[1]] = [coord]
 
     # for test_input.txt, the only enclosed tile should be at [2, 2] i think
+    # currently I have an issue, when I get test_enclosed working, test_enclosed2
+    # no longer works, and vice versa, need to find a better way of counting walls
+    # whether a node is contained inside based on that or not.
     enclosed = []
     count = 0
     for y_idx, line, in enumerate(maze):
