@@ -114,11 +114,6 @@ def main():
 
     # pipe_loop should get all of the nodes coordinates for the loop, the
     # last coordinate in pipe_loop will be the starting coordinates.
-    path_order = []
-    for idx, coord in enumerate(pipe_loop):
-        path_order.append(coord)
-
-    path_order = [path_order[-1]] + path_order[:-1]
     # now that we have the list of coords that make up the loop, I'd like
     # to try the ray cast method of determining whether a point is within
     # the loop, I may be implementing this horrifically incorrectly but
@@ -130,71 +125,39 @@ def main():
     # with I'll only do it in one direction to save some time.
     # should probably sort and split the path edges into lists for
     # each y_index
-    for i, coords in enumerate(pipe_loop):
-        for j in range(len(pipe_loop) - i - 1):
-            # sort the coords by y index and subsort by x coords
-            if pipe_loop[j][1] > pipe_loop[j + 1][1]:
-                pipe_loop[j], pipe_loop[j + 1] = pipe_loop[j + 1], pipe_loop[j]
-            elif pipe_loop[j][1] == pipe_loop[j + 1][1]:
-                if pipe_loop[j][0] > pipe_loop[j + 1][0]:
-                    pipe_loop[j], pipe_loop[j +
-                                            1] = pipe_loop[j + 1], pipe_loop[j]
 
-    print(path_order, pipe_loop)
-    # create the dict that contains all edges for a given y coordinate:
-    edges_at_y = {}
-    for coord in pipe_loop:
-        if maze[coord[1]][coord[0]] == '7':
-            new_maze[coord[1]][coord[0]] = '┐'
-        elif maze[coord[1]][coord[0]] == 'J':
-            new_maze[coord[1]][coord[0]] = '┘'
-        elif maze[coord[1]][coord[0]] == 'F':
-            new_maze[coord[1]][coord[0]] = '┌'
-        elif maze[coord[1]][coord[0]] == 'L':
-            new_maze[coord[1]][coord[0]] = '└'
-        else:
-            new_maze[coord[1]][coord[0]] = maze[coord[1]][coord[0]]
-        if coord[1] in edges_at_y.keys():
-            edges_at_y[coord[1]] += [coord]
-        else:
-            edges_at_y[coord[1]] = [coord]
+    pipe_loop = [pipe_loop[-1]] + pipe_loop[:-1]
 
     # for test_input.txt, the only enclosed tile should be at [2, 2] i think
     # currently I have an issue, when I get test_enclosed working, test_enclosed2
     # no longer works, and vice versa, need to find a better way of counting walls
     # whether a node is contained inside based on that or not.
     enclosed = []
-    count = 0
-    for y_idx, line, in enumerate(maze):
-        walls_crossed = 0
-        if y_idx == len(maze) - 1:
-            break
-        print(line)
-        for x_idx, char in enumerate(line):
-            if [x_idx, y_idx] in path_order:
-                if [x_idx, y_idx + 1] in path_order:
-                    curr_coord_idx = path_order.index([x_idx, y_idx])
-                    coord_below_idx = path_order.index([x_idx, y_idx + 1])
-                    print(curr_coord_idx, coord_below_idx)
-                    diff = (curr_coord_idx - coord_below_idx) % len(path_order)
+    for y_idx, line_at_y in enumerate(maze):
+        # if y_idx == 6:
+        num_crossings = 0
+        for x_idx, char in enumerate(line_at_y):
+            if [x_idx, y_idx] in pipe_loop:
+                # only check below for another wall:
+                # print(x_idx, y_idx)
+                if [x_idx, y_idx + 1] in pipe_loop:
+                    # print(x_idx, y_idx + 1)
+                    # check that diff in index is only one
+                    curr_idx = pipe_loop.index([x_idx, y_idx])
+                    below_idx = pipe_loop.index([x_idx, y_idx + 1])
+                    diff = (curr_idx - below_idx)
+                    # print(curr_idx, below_idx, diff)
                     if diff == 1:
-                        walls_crossed += 1
+                        num_crossings += 1
                     elif diff == -1:
-                        walls_crossed -= 1
-                    else:
-                        print(
-                            'Genuinely should never ever see this, how did I mess up so bad')
-            elif walls_crossed == 1:
-                count += 1
+                        num_crossings -= 1
+                    # else:
+                       # print('shouldnt see this')
+                       # print(curr_idx, below_idx, diff)
+            elif num_crossings == 1:
                 enclosed.append([x_idx, y_idx])
-            else:
-                continue
-
-    for lineabc in new_maze:
-        print(''.join(lineabc))
-
-    print(count, enclosed)
-    return count
+    # print(enclosed, len(enclosed))
+    print(len(enclosed))
 
 
 def get_next_node(curr_node, directions, prev_node, maze):
@@ -206,56 +169,6 @@ def get_next_node(curr_node, directions, prev_node, maze):
     # should never not return one of the two possible nodes
     print('Something went wrong, check helper')
     return -1
-
-
-# def find_gaps(line, edges, edge_key):
-    # Seems like this is an incorrect implementation, will switch to
-    # the non-zero winding rule to attempt to find answer
-    # Reminder that the edges are pre sorted in main
-    # if edge_key == 5:
-    # x_values = []
-    # count = 0
-    # tiles = []
-    # for value in edges[edge_key]:
-    #   x_values.append(value[0])
-    # we now have the x values for the line, group
-    # them to create continuous walls, if there is an
-    # even number of walls, can check between every pair,
-    # ie if walls at [1, 3, 5, 7] we can say enclosed in
-    # between 1 and 3 and between 5 and 7 so return x = 2, 6
-    # for a count of 2.
-    # walls = []
-    # want to group all values that are adjacent, so 1, 2, 4, 5
-    # would become [[1,2], [4,5]]
-    # x = 0
-    # while x < len(x_values):
-    #    wall = [x_values[x]]
-    #    while (x + 1 < len(x_values) and x_values[x + 1] - 1 == x_values[x]):
-    #       wall.append(x_values[x + 1])
-    #      x += 1
-    #  walls.append(wall)
-    # x += 1
-
-    # print(walls)
-    # now have list of walls, if even find all values in between
-    # tiles = []
-    # walls_crossed = 0
-    # for i, wall in enumerate(walls):
-    # find the number in between end of wall i and start of wall i + 1
-    #    walls_crossed += 1
-    #    if (walls_crossed) % 2 == 1:
-    # try finding gap between curr wall and next
-    #        if i + 1 < len(walls):
-    #            start = walls[i][-1]
-    #            end = walls[i + 1][0]
-    #            count += end - start - 1
-    #            for j in range(end - start - 1):
-    #                tiles.append([start + 1 + j, edge_key])
-
-    # print(tiles)
-
-    # return [count, tiles]
-    # return [0, []]
 
 
 if __name__ == "__main__":
