@@ -29,6 +29,13 @@ def main():
     # input ends up being too crazy, but I can't think of the base cases,
     # or how to properly recurse for the remaining cases.
 
+    # So the breakdown into smaller pieces would be shortening the input line
+    # if the first char is '.' since it is irrelevant. Then if it is a '?' check
+    # what happens if turning it into '#'. Need to do a check now if it's possible
+    # to fit the first broken length in the newly created series of '#'s if not,
+    # then it should return 0 + count_permutations(str[1:], lens) if it can be fit
+    # in, then 1 + count_permutations(str[lens[0]:], lens[1:])
+
 
 if __name__ == "__main__":
     main()
