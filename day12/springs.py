@@ -3,7 +3,6 @@
 # memoization of the sub problems.
 
 import sys
-import math
 
 if (len(sys.argv) != 2):
     sys.exit('Usage: python springs.py input.txt')
