@@ -33,12 +33,15 @@ def find_reflection(grid):
     # horizontally first, then if none found
     # look for them vertically.
 
+    # THERE CAN BE MULTIPLE LINES OF REFLECTION AHHHHHHH
+    # The input I was stressing over didn't even have two
+    # lines of reflection....
+
     # DO NOT LOOK THROUGH EVERY POSSIBLE COMBO
     # ONLY NEED TO LOOK AND FIND WHICH LINE MATCHES
     # ONE OF THE EDGES this might still be worse
     # than checking every pair if they're equal
-    # but in my heart it seems faster plan is start
-    # at idx 0 for rows, check against max_row every time
+    # but in my heart it seems faster plan is start at idx 0 for rows, check against max_row every time
     # loop through until an identical row has been found or
     # reach the end of the rows, then do the same for vertical
     # lines. worst case for this is the two lines being identical
@@ -71,47 +74,68 @@ def find_reflection(grid):
     # they are all matching seems like the one way to avoid edge cases for now
     # but the run time for that approach seems way over the top.
 
-    max_col = len(grid[0]) - 1
-    curr_col = 0
+    lines_above = find_all_horizontal_reflections(grid)
+    lines_to_left = find_all_vertical_reflections(grid)
+
+    score = 0
+
+    for hidx in lines_above:
+        print(hidx)
+        score += summarize('horizontal', hidx)
+    for vidx in lines_to_left:
+        score += summarize('vertical', vidx)
+
+    return score
+
+
+def find_all_horizontal_reflections(grid):
     max_row = len(grid) - 1
     curr_row = 0
+    idxs = []
 
     # start with comparing rows
     found = False
-    while not found and curr_row < max_row:
+    while curr_row < max_row:
         found = compare_two_lines(grid[curr_row], grid[max_row])
+        print(grid[curr_row], grid[max_row])
+        print(found)
         if not found:
             curr_row += 1
         # realistically do not need the check below, but it makes
         # it comfy and easier to read the logic imo
         elif found:
+            print('compared two lines and entered the deeper check')
+            print(curr_row, max_row)
             temp_up_middle = curr_row + math.floor((max_row - curr_row) / 2)
             temp_down_middle = temp_up_middle + 1
             max_len = len(grid) - 1
             # calling all lines between can set found back to false if it is not a real reflection,
             # in order to continue iterating through.
-            print(temp_up_middle, temp_down_middle)
-            print(curr_row, max_row)
             found = all_lines_between_reflected(
                 'horizontal', grid, 0, max_len, temp_down_middle, temp_up_middle)
             if not found:
+                print('found that all lines are NOT reflected in between: ')
+                print(curr_row, max_row)
                 curr_row += 1
+            elif found:
+                print('found that all lines are reflected in between: ')
+                print(curr_row, max_row)
+                top_row_idx = curr_row + math.floor((max_row - curr_row) / 2)
+                bottom_row_idx = top_row_idx + 1
+                idxs.append(bottom_row_idx)
 
-    if found:
         # reflection is horizontal and then we can use the curr_row
         # and max_row to find the point where the reflection exists
         # by taking the floor of the difference / 2, this is the
         # first row on top so to speak, add one to get the index
         # of the row below
-        top_row_idx = curr_row + math.floor((max_row - curr_row) / 2)
-        bottom_row_idx = top_row_idx + 1
-        return summarize('horizontal', bottom_row_idx)
 
-    # should probably compare rows from the last row iterating up and always
-    # comparing to the first row in the grid in case the reflection is nearer
-    # to the top. since max row was not equal to the first row, start at max_row
-    # - 1, to save one comparison
-    while not found and max_row >= 1:
+        # should probably compare rows from the last row iterating up and always
+        # comparing to the first row in the grid in case the reflection is nearer
+        # to the top. since max row was not equal to the first row, start at max_row
+        # - 1, to save one comparison
+    while max_row >= 1:
+        print('checking lines against the first line in the grid')
         found = compare_two_lines(grid[0], grid[max_row - 1])
         if not found:
             max_row -= 1
@@ -119,27 +143,35 @@ def find_reflection(grid):
             temp_up_middle = math.floor(max_row / 2)
             temp_down_middle = temp_up_middle + 1
             max_len = len(grid) - 1
+            print('temp_up_middle, temp_down_middle')
+            print(temp_up_middle, temp_down_middle)
+
             # calling all lines between can set found back to false if it is not a real reflection,
             # in order to continue iterating through.
             found = all_lines_between_reflected(
                 'horizontal', grid, 0, max_len, temp_down_middle, temp_up_middle)
             if not found:
                 max_row -= 1
+            elif found:
+                top_row_idx = math.floor(max_row / 2)
+                bottom_row_idx = top_row_idx + 1
+                idxs.append(bottom_row_idx)
 
-    if found:
         # found horizontal reflection from 0th row to whatever max_row - 1 is
         # use the diff to set top and bottom row idxs one of the edges will be
         # 0 so just take the floor of max_row / 2
-        top_row_idx = math.floor(max_row / 2)
-        bottom_row_idx = top_row_idx + 1
-        return summarize('horizontal', bottom_row_idx)
 
-    # didn't find the reflection horizontally, need to check vertically,
-    # need to create the vertical line to pass into compare_two_lines,
-    # can reuse the line at the end of the grid each time, but
-    # need to make new ones each time curr_col moves
+    return idxs
 
-    # create the line to use at max_col,
+
+def find_all_vertical_reflections(grid):
+    max_col = len(grid[0]) - 1
+    curr_col = 0
+
+    idxs = []
+
+    found = False
+
     last_col = create_line(grid, max_col)
     while not found and curr_col < max_col:
         curr_col_line = create_line(grid, curr_col)
@@ -162,7 +194,7 @@ def find_reflection(grid):
         # column values instead
         first_col_idx = curr_col + math.floor((max_col - curr_col) / 2)
         second_col_idx = first_col_idx + 1
-        return summarize('vertical', second_col_idx)
+        idxs.append(second_col_idx)
 
     # do the same reverse check as we did in the horizontal one if not found.
     first_col = create_line(grid, 0)
@@ -187,10 +219,9 @@ def find_reflection(grid):
         # use the diff to set top and bottom row idxs one of the edges will be
         # 0 so just take the floor of max_row / 2
         left_col = math.floor(max_col / 2) + 1
-        return summarize('vertical', left_col)
+        idxs.append(left_col)
 
-    # should only ever return 0 if there is no reflection
-    return 0
+    return idxs
 
 
 def all_lines_between_reflected(reflection_type, grid, upper_end_idx, low_end_idx, low_middle, upper_middle):
@@ -222,6 +253,7 @@ def all_lines_between_reflected(reflection_type, grid, upper_end_idx, low_end_id
             print(low_middle, upper_middle)
             line1 = grid[upper_middle]
             line2 = grid[low_middle]
+            print(line1, line2)
             equal = compare_two_lines(line1, line2)
             if equal:
                 upper_middle -= 1
@@ -258,7 +290,8 @@ def compare_two_lines(line1, line2):
 
 summary_count = 0
 for item in grids:
-    summary_count += find_reflection(item)
+    #    summary_count += find_reflection(item)
+    print(find_all_horizontal_reflections(item))
 
 print(summary_count)
 
