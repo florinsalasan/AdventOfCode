@@ -200,33 +200,6 @@ def print_grid(stringed):
 # go until the return value is in the dict already use modulo operator to find
 # how deep to go into the cycle to get the last grid, then we'll do the
 # math to get the northern load.
-
-tilt_line_dict.clear()
-curr_input = stringed_grid
-count = 0
-while curr_input not in tilt_line_dict and count < NUM_CYCLES:
-    reverse_lookup[count] = curr_input
-    new_input = spin_cycle(curr_input)
-    tilt_line_dict[curr_input] = new_input
-    print_grid(new_input)
-    print('')
-    curr_input = new_input
-    count += 1
-
-# found a loop or just went through the entire billion
-# iterations and I lost my mind lol
-# get the reverse lookup with the modulo thing
-print(count)
-input_to_find_load_idx = (count % NUM_CYCLES) - 1
-print(input_to_find_load_idx)
-input_find_load = reverse_lookup[input_to_find_load_idx]
-print('')
-print_grid(input_find_load)
-
-
-# print_grid(tilt_east(stringed_grid))
-# print(spin_cycle(stringed_grid))
-
 def make_grid_from_string(stringed):
     grid = []
     for i in range(HEIGHT):
@@ -243,4 +216,60 @@ def get_north_load(grid):
     return count
 
 
-print(get_north_load(make_grid_from_string(input_find_load)))
+tilt_line_dict.clear()
+curr_input = stringed_grid
+count = 0
+
+# The loop might not be from the last cycle back to
+# the first, so need to find the cycle length, then
+# mod that from the difference between NUM_CYCLES and count
+# reverse lookup gives the input at spin cycle num x, so at x = 0
+# it is the initial string and not spun, at 1, it's one, ... until
+# 1billion - 1 is that last string in reverse_lookup if it every gets there
+
+while curr_input not in tilt_line_dict and count < NUM_CYCLES:
+    reverse_lookup[count] = curr_input
+    new_input = spin_cycle(curr_input)
+    tilt_line_dict[curr_input] = [new_input, count]
+    curr_input = new_input
+    count += 1
+
+# found a loop or just went through the entire billion
+# iterations and I lost my mind lol
+# get the reverse lookup with the modulo thing
+print('count: ' + str(count))
+
+# to find where it cycles to, use the last spun string as the key in
+# tilt_line_dict, and get the index where the cycle begins.
+
+# If the spin cycle never loops in the NUM_CYCLES inputted this breaks
+# So keep that in mind if ever reusing this
+cycle_start = tilt_line_dict[curr_input][1]
+cycle_len = count - cycle_start
+# print(cycle_len)
+
+# Now to calc the number of cycles we need to run, to do so I believe
+# the math is (NUM_CYCLES - count) % cycle_len
+
+spins_left = (NUM_CYCLES - count) % cycle_len
+# print(spins_left)
+
+spin_from_here = reverse_lookup[cycle_start]
+for i in range(spins_left):
+    spin_from_here = spin_cycle(spin_from_here)
+
+
+print(NUM_CYCLES - count)
+print(cycle_len)
+print((NUM_CYCLES - count) % cycle_len)
+
+# print(tilt_line_dict)
+# print(reverse_lookup)
+
+# print_grid(spin_from_here)
+
+# print_grid(tilt_east(stringed_grid))
+# print(spin_cycle(stringed_grid))
+
+
+print(get_north_load(make_grid_from_string(spin_from_here)))
