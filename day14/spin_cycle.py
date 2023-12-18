@@ -12,113 +12,235 @@ with open(sys.argv[1]) as input_file:
 input_grid = []
 for line in raw_input:
     line = line[:-1]
-    print(list(line))
     input_grid.append(line)
-input_grid = input_grid[:-1]
-print(input_grid)
 
-# How do i reduce 1 billion iterations of the spin cycle
-# for a grid that is 100 lines tall. I think the play is
-# break it down line by line and column by column then
-# have 4 dicts, key being the current state, value being
-# the value after tilting the rocks every way. Biggest
-# issue would be reconstructing the grid after every
-# call to tilt N, W, S, E. Once we've done 1 billion
-# iterations of this, get the total load on northern
-# support beams.
+if input_grid[-1] == '\n' or input_grid[-1] == '':
+    input_grid = input_grid[:-1]
+stringed_grid = ''.join(input_grid)
+
+for line in input_grid:
+    print(line)
+
+print('')
+
+HEIGHT = len(input_grid)
+WIDTH = len(input_grid[0])
+
+# New plan, modify one big string doing some
+# math tilting in each direction,
+# once we reach a state where the tilted grid is
+# in the dict, we can do modulo operation to
+# find which state to go to in the reverse lookup
 
 tilt_line_dict = {}
+reverse_lookup = {}
 
-# modify tilt north function from part1 to create a vertical
-# line and then use a helper that checks the dict for a cached
-# value. rebuild the grid and return the modified version
-# can have the tilt line function be used for every version
-# then just have functions that rotate the grid every time.
-
-# once the vertical lines all exist, 'rotate' by recreating the grid
-# from last to first, then tilt everything north again. This
-# results in effectively going N - W, W - S, S - E, E - N
+print(HEIGHT, WIDTH)
 
 
-def rotate_grid(grid):
-    print(grid)
-    verts = [[]for x in range((len(grid[0])))]
-    for row in range(len(grid)):
-        for col in range(len(grid[row])):
-            verts[col].append(grid[row][col])
-    str_verts = []
-    for vert in verts:
-        append_this = ''.join(vert)
-        str_verts.append(append_this)
-    to_return = []
-    for i in range(len(str_verts) - 1, -1, -1):
-        # for i in range(len(grid)):
-        to_return.append(str_verts[i])
+def spin_cycle(stringed_grid):
+    tilted_north = tilt_north(stringed_grid)
+    # print('tilted_north: ' + tilted_north)
+    # print('')
+    # print_grid(tilted_north)
+    # print('')
+    tilted_west = tilt_west(tilted_north)
+    # print('tilted_west: ' + tilted_west)
+    # print('')
+    # print_grid(tilted_west)
+    # print('')
+    tilted_south = tilt_south(tilted_west)
+    # print('tilted_south: ' + tilted_south)
+    # print('')
+    # print_grid(tilted_south)
+    # print('')
+    tilted_east = tilt_east(tilted_south)
+    # print('tilted_east: ' + tilted_east)
+    # print('')
+    # print_grid(tilted_east)
+    # print('')
 
-    print('rotated, og')
-    print(str_verts, grid)
+    tilt_line_dict[stringed_grid] = tilted_east
 
-    return str_verts
-
-
-def tilt(grid):
-    new_grid = []
-    for line in grid:
-        curr_line = list(line)
-        new_grid.append(tilt_line(curr_line))
-
-    return new_grid
+    return tilted_east
 
 
-def tilt_line(line):
-    curr_line = ''.join(line)
-    if curr_line in tilt_line_dict:
-        return tilt_line_dict[line]
-    else:
-        curr_line = line
-        curr_cube = -1
-        highest_possible_spot = curr_cube + 1
-        for k in range(len(curr_line)):
-            if line[k] == '#':
-                curr_cube = k
-                highest_possible_spot = curr_cube + 1
-            elif line[k] == 'O':
-                curr_line[highest_possible_spot] = 'O'
-                if k != highest_possible_spot:
-                    curr_line[k] = '.'
-                highest_possible_spot += 1
-        to_return = ''.join(curr_line)
-        return to_return
+def tilt_north(stringed_grid):
+    len_str = len(stringed_grid)
+    curr_string = stringed_grid
+    for i in range(0, WIDTH, 1):
+        # The i loop lets the j - loop create the vertical
+        # lines
+        highest_possible_idx = i
+        curr_square = -1000
+        for j in range(i, len_str, WIDTH):
+            if stringed_grid[j] == '#':
+                curr_square = j
+                highest_possible_idx = curr_square + WIDTH
+            elif stringed_grid[j] == 'O':
+                if j != highest_possible_idx:
+                    curr_string = curr_string[:highest_possible_idx] + 'O' + \
+                        curr_string[highest_possible_idx +
+                                    1: j] + '.' + curr_string[j + 1:]
+                highest_possible_idx += WIDTH
 
-# Ok so have a function that tilts every line, then returns
-# the tilted grid, then we can rotate the grid to then call tilt
-# on the new grid again. repeat 4 times for a cycle, NUM_CYCLES
-# for the number of cycles
+    # add the modified string to dict, reverse lookup gets added in the for loop
+
+    return curr_string
 
 
-curr_grid = input_grid
-for i in range(NUM_CYCLES * 4):
-    # tilt it,
-    curr_grid = tilt(curr_grid)
-    # rotate it,
-    curr_grid = rotate_grid(curr_grid)
+def tilt_west(stringed_grid):
+    # for tilting east west, since I don't need the entire
+    # grid, can call tilt west on the substrings of size
+    # WIDTH then recombine them after
+    len_str = len(stringed_grid)
+    shifted = []
+    for i in range(0, len_str, WIDTH):
+        # The i loop lets the j - loop create the vertical
+        # lines
+        mini_shifted = tilt_west_substring(stringed_grid[i: i + WIDTH])
+        shifted.append(mini_shifted)
 
-    if (i - 1) % 4 == 0:
-        print('east:')
-    elif (i - 1) % 3 == 0:
-        print('south:')
-    elif (i - 1) % 2 == 0:
-        print('west:')
-    else:
-        print('north:')
+    curr_string = ''.join(shifted)
+    return curr_string
 
-    for line in curr_grid:
-        print(line)
 
+def tilt_west_substring(substring):
+    # called from tilt_west, given a string of size WIDTH
+    # return a new string with the 'O' shifted west
+    curr_square = -1
+    highest_possible_idx = curr_square + 1
+    curr_string = substring
+    # assume this is being called properly
+    for i in range(WIDTH):
+        if substring[i] == '#':
+            curr_square = i
+            highest_possible_idx = curr_square + 1
+        elif substring[i] == 'O':
+            # rebuild the curr_string, shifting the current 'O' block
+            if i != highest_possible_idx:
+                curr_string = curr_string[:highest_possible_idx] + 'O' + \
+                    curr_string[highest_possible_idx + 1: i] + \
+                    '.' + curr_string[i + 1:]
+            highest_possible_idx += 1
+
+    return curr_string
+
+
+def tilt_south(stringed_grid):
+    len_str = len(stringed_grid)
+    curr_string = stringed_grid
+    for i in range(0, WIDTH, 1):
+        # The i loop lets the j - loop create the vertical
+        # lines
+        curr_rock = -100
+        insert_at = len_str - i - 1
+        for j in range(len_str - i, 0, -WIDTH):
+            idx = j - 1
+            if stringed_grid[idx] == '#':
+                # set the value of rock to j,
+                # slideable slot to j + WIDTH
+                curr_rock = idx
+                insert_at = curr_rock - WIDTH
+            elif stringed_grid[idx] == 'O':
+                # rebuild curr_string since it's iterating
+                # backwards the indexing is backwards
+                if insert_at != idx:
+                    curr_string = curr_string[:idx] + '.' + curr_string[idx +
+                                                                        1: insert_at] + 'O' + curr_string[insert_at + 1:]
+                insert_at -= WIDTH
+
+    return curr_string
+
+
+def tilt_east(stringed_grid):
+    # for tilting east west, since I don't need the entire
+    # grid, can call tilt west on the substrings of size
+    # WIDTH then recombine them after
+    len_str = len(stringed_grid)
+    shifted = []
+    for i in range(0, len_str, WIDTH):
+        # The i loop lets the j - loop create the vertical
+        # lines
+        mini_shifted = tilt_east_substring(stringed_grid[i: i + WIDTH])
+        shifted.append(mini_shifted)
+
+    curr_string = ''.join(shifted)
+    return curr_string
+
+
+def tilt_east_substring(substring):
+    # called from tilt_west, given a string of size WIDTH
+    # return a new string with the 'O' shifted west
+    curr_square = WIDTH
+    insert_at = curr_square - 1
+    curr_string = substring
+    # assume this is being called properly
+    for i in range(WIDTH, 0, -1):
+        idx = i - 1
+        if substring[idx] == '#':
+            curr_square = idx
+            insert_at = curr_square - 1
+        elif substring[idx] == 'O':
+            # rebuild the curr_string, shifting the current 'O' block
+            if idx != insert_at:
+                curr_string = curr_string[:idx] + '.' + curr_string[idx + 1:insert_at] + \
+                    'O' + curr_string[insert_at + 1:]
+            insert_at -= 1
+
+    return curr_string
+
+
+def print_grid(stringed):
+    for i in range(HEIGHT):
+        print(stringed[i * WIDTH: (i * WIDTH) + WIDTH])
+
+
+# Have all of the functions defined, call spin_cycle(stringed_grid) to start
+# go until the return value is in the dict already use modulo operator to find
+# how deep to go into the cycle to get the last grid, then we'll do the
+# math to get the northern load.
+
+tilt_line_dict.clear()
+curr_input = stringed_grid
+count = 0
+while curr_input not in tilt_line_dict and count < NUM_CYCLES:
+    reverse_lookup[count] = curr_input
+    new_input = spin_cycle(curr_input)
+    tilt_line_dict[curr_input] = new_input
+    print_grid(new_input)
     print('')
+    curr_input = new_input
+    count += 1
+
+# found a loop or just went through the entire billion
+# iterations and I lost my mind lol
+# get the reverse lookup with the modulo thing
+print(count)
+input_to_find_load_idx = (count % NUM_CYCLES) - 1
+print(input_to_find_load_idx)
+input_find_load = reverse_lookup[input_to_find_load_idx]
+print('')
+print_grid(input_find_load)
 
 
-# count 'O' on each line to calc load on north beams
-curr_grid = rotate_grid(curr_grid)
-for line in curr_grid:
-    print(line)
+# print_grid(tilt_east(stringed_grid))
+# print(spin_cycle(stringed_grid))
+
+def make_grid_from_string(stringed):
+    grid = []
+    for i in range(HEIGHT):
+        grid.append(list(stringed[i * WIDTH: (i * WIDTH) + WIDTH]))
+
+    return grid
+
+
+def get_north_load(grid):
+    count = 0
+    for i in range(HEIGHT):
+        count += (HEIGHT - i) * grid[i].count('O')
+
+    return count
+
+
+print(get_north_load(make_grid_from_string(input_find_load)))
