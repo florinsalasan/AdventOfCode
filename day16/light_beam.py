@@ -9,6 +9,10 @@ with open(sys.argv[1]) as input_file:
 for line in lines:
     print(line)
 
+
+HEIGHT = len(lines)
+WIDTH = len(lines[0])
+
 # light beam enters in the top left corner and moves towards
 # the right until it hits some sort of mirror or splitter
 # '\' or '/' are mirrors, they change the direction at 90deg angle
@@ -41,12 +45,17 @@ def get_next_node(curr_node, curr_direction, maze):
     # all will modify the seen dict, hopefully do not need to deal with
     # loops in the maze.
     x, y = curr_node[0], curr_node[1]
+    if (x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT):
+        # out of bounds so return from here, unsure what to return at this moment.
+        return
     curr_node_symbol = maze[y][x]
     # deal with the different conditions of the light beam direction hitting
     # various symbols.
 
-    for direction in directions[curr_node_symbol]:
-        return [x + direction[0], y + direction[1]]
-    # should never not return one of the two possible nodes
+    # start with direction 'L'
+    if curr_direction == 'L':
+        if curr_node_symbol == '|':
+
+            # should never not return one of the two possible nodes
     print('Something went wrong, check helper')
     return -1
