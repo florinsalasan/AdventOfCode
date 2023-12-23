@@ -36,6 +36,7 @@ directions = {
 # create a dict that contains all of the coordinates of the
 # tiles that a lightbeam has passed through
 seen = {}
+count = 0
 
 
 def get_next_node(curr_node, curr_direction, maze):
@@ -49,6 +50,10 @@ def get_next_node(curr_node, curr_direction, maze):
         # out of bounds so return from here, unsure what to return at this moment.
         return
     curr_node_symbol = maze[y][x]
+    if (x, y) not in seen:
+        seen[(x, y)] = True
+        count += 1
+
     # deal with the different conditions of the light beam direction hitting
     # various symbols.
 
