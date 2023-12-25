@@ -48,6 +48,8 @@ def get_next_node(curr_node, curr_direction, maze):
     # loops in the maze.
     global count
     x, y = curr_node[0], curr_node[1]
+    if count > x * y:
+        return
     if (x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT):
         # out of bounds so return from here, unsure what to return at this moment.
         return
