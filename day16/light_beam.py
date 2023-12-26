@@ -48,16 +48,17 @@ def get_next_node(curr_node, curr_direction, maze):
     # loops in the maze.
     global count
     x, y = curr_node[0], curr_node[1]
-    if count > x * y:
+    print(x, y)
+    # need to write better base cases so that the function will actually return
+    # at some point
+    if count > WIDTH * HEIGHT:
         return
     if (x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT):
         # out of bounds so return from here, unsure what to return at this moment.
-        return
+        return 0
     curr_node_symbol = maze[y][x]
     if (x, y) not in seen:
         seen[(x, y)] = True
-
-        count += 1
 
     # deal with the different conditions of the light beam direction hitting
     # various symbols.
@@ -75,47 +76,43 @@ def get_next_node(curr_node, curr_direction, maze):
     # start with direction 'L'
     if curr_direction == 'L':
         if curr_node_symbol == '|':
-            get_next_node(node_above, 'U', maze)
-            get_next_node(node_below, 'D', maze)
+            return 1 + get_next_node(node_above, 'U', maze) + get_next_node(node_below, 'D', maze)
         elif curr_node_symbol == "\\":
-            get_next_node(node_above, 'U', maze)
+            return 1 + get_next_node(node_above, 'U', maze)
         elif curr_node_symbol == '/':
-            get_next_node(node_below, 'D', maze)
+            return 1 + get_next_node(node_below, 'D', maze)
         else:
-            get_next_node(node_left, 'L', maze)
+            return 1 + get_next_node(node_left, 'L', maze)
 
     elif curr_direction == 'R':
         if curr_node_symbol == '|':
-            get_next_node(node_above, 'U', maze)
-            get_next_node(node_below, 'D', maze)
+            return 1 + get_next_node(node_above, 'U', maze) + get_next_node(node_below, 'D', maze)
         elif curr_node_symbol == "\\":
-            get_next_node(node_above, 'D', maze)
+            return 1 + get_next_node(node_above, 'D', maze)
         elif curr_node_symbol == '/':
-            get_next_node(node_below, 'U', maze)
+            return 1 + get_next_node(node_below, 'U', maze)
         else:
-            get_next_node(node_right, 'R', maze)
+            return 1 + get_next_node(node_right, 'R', maze)
 
     elif curr_direction == 'U':
         if curr_node_symbol == '-':
-            get_next_node(node_right, 'R', maze)
-            get_next_node(node_left, 'L', maze)
+            return 1 + get_next_node(node_right, 'R', maze) + get_next_node(node_left, 'L', maze)
         elif curr_node_symbol == "\\":
-            get_next_node(node_left, 'L', maze)
+            return 1 + get_next_node(node_left, 'L', maze)
         elif curr_node_symbol == '/':
-            get_next_node(node_right, 'R', maze)
+            return 1 + get_next_node(node_right, 'R', maze)
         else:
-            get_next_node(node_above, 'U', maze)
+            return 1 + get_next_node(node_above, 'U', maze)
 
     elif curr_direction == 'D':
         if curr_node_symbol == '-':
-            get_next_node(node_right, 'R', maze)
-            get_next_node(node_left, 'L', maze)
+            return 1 + get_next_node(node_right, 'R', maze) + get_next_node(node_left, 'L', maze)
         elif curr_node_symbol == "\\":
-            get_next_node(node_right, 'R', maze)
+            return 1 + get_next_node(node_right, 'R', maze)
         elif curr_node_symbol == '/':
-            get_next_node(node_left, 'L', maze)
+            return 1 + get_next_node(node_left, 'L', maze)
         else:
-            get_next_node(node_below, 'D', maze)
+            return 1 + get_next_node(node_below, 'D', maze)
 
             # should never not return one of the two possible nodes
     print('Something went wrong, check helper')
@@ -123,4 +120,5 @@ def get_next_node(curr_node, curr_direction, maze):
 
 
 get_next_node((0, 0), 'R', lines)
+print(seen)
 print(count)
