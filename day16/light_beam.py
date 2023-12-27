@@ -52,11 +52,13 @@ def get_next_node(curr_node, curr_direction, maze):
     # need to write better base cases so that the function will actually return
     # at some point
     if count > WIDTH * HEIGHT:
-        return
+        return 0
     if (x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT):
         # out of bounds so return from here, unsure what to return at this moment.
         return 0
     curr_node_symbol = maze[y][x]
+    if (x, y) in seen:
+        return 0
     if (x, y) not in seen:
         seen[(x, y)] = True
 
@@ -119,6 +121,5 @@ def get_next_node(curr_node, curr_direction, maze):
     return -1
 
 
-get_next_node((0, 0), 'R', lines)
+print(get_next_node((0, 0), 'R', lines))
 print(seen)
-print(count)
