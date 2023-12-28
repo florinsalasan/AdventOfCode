@@ -58,9 +58,12 @@ def get_next_node(curr_node, curr_direction, maze):
         return 0
     curr_node_symbol = maze[y][x]
     if (x, y) in seen:
-        return 0
+        if curr_direction in seen[(x, y)]:
+            return 0
+        else:
+            seen[(x, y)] += [curr_direction]
     if (x, y) not in seen:
-        seen[(x, y)] = True
+        seen[(x, y)] = [curr_direction]
 
     # deal with the different conditions of the light beam direction hitting
     # various symbols.
@@ -90,9 +93,9 @@ def get_next_node(curr_node, curr_direction, maze):
         if curr_node_symbol == '|':
             return 1 + get_next_node(node_above, 'U', maze) + get_next_node(node_below, 'D', maze)
         elif curr_node_symbol == "\\":
-            return 1 + get_next_node(node_above, 'D', maze)
+            return 1 + get_next_node(node_below, 'D', maze)
         elif curr_node_symbol == '/':
-            return 1 + get_next_node(node_below, 'U', maze)
+            return 1 + get_next_node(node_above, 'U', maze)
         else:
             return 1 + get_next_node(node_right, 'R', maze)
 
