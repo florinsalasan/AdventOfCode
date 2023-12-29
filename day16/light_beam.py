@@ -6,6 +6,8 @@ if (len(sys.argv) != 2):
 with open(sys.argv[1]) as input_file:
     lines = input_file.readlines()
 
+if lines[-1] == '' or lines[-1] == '\n':
+    lines = lines[:-1]
 for line in lines:
     print(line)
 
