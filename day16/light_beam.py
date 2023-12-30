@@ -8,6 +8,7 @@ with open(sys.argv[1]) as input_file:
 
 if lines[-1] == '' or lines[-1] == '\n':
     lines = lines[:-1]
+
 for line in lines:
     print(line)
 
@@ -127,4 +128,5 @@ def get_next_node(curr_node, curr_direction, maze):
 
 
 print(get_next_node((0, 0), 'R', lines))
+print(len(seen.keys()))
 print(seen)
