@@ -39,94 +39,21 @@ directions = {
 # create a dict that contains all of the coordinates of the
 # tiles that a lightbeam has passed through
 seen = {}
-global count
-count = 0
+
+# so my recursive effort was bad, will try doing this iteratively
+# don't know how well this will work given that there are splits in the beam
+
+# so the pathing always begins top left corner and continues towards the right
+# then the rules with the mirrors and splitters come into effect.
 
 
-def get_next_node(curr_node, curr_direction, maze):
-    # starting the traversal begins with get_next_node([0, 0], 'R', lines)
-    # need to find an end condition, probably when the curr_node is out of bounds
-    # should be able to call multiple instances of this since it will be recursive
-    # all will modify the seen dict, hopefully do not need to deal with
-    # loops in the maze.
-    global count
-    x, y = curr_node[0], curr_node[1]
-    print(x, y)
-    # need to write better base cases so that the function will actually return
-    # at some point
-    if count > WIDTH * HEIGHT:
-        return 0
-    if (x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT):
-        # out of bounds so return from here, unsure what to return at this moment.
-        return 0
-    curr_node_symbol = maze[y][x]
-    if (x, y) in seen:
-        if curr_direction in seen[(x, y)]:
-            return 0
-        else:
-            seen[(x, y)] += [curr_direction]
-    if (x, y) not in seen:
-        seen[(x, y)] = [curr_direction]
-
-    # deal with the different conditions of the light beam direction hitting
-    # various symbols.
-
-    # prepare all of 4 possible next nodes
-    node_above = (curr_node[0] + directions['U'][0],
-                  curr_node[1] + directions['U'][1])
-    node_below = (curr_node[0] + directions['D'][0],
-                  curr_node[1] + directions['D'][1])
-    node_left = (curr_node[0] + directions['L'][0],
-                 curr_node[1] + directions['L'][1])
-    node_right = (curr_node[0] + directions['R'][0],
-                  curr_node[1] + directions['R'][1])
-
-    # start with direction 'L'
-    if curr_direction == 'L':
-        if curr_node_symbol == '|':
-            return 1 + get_next_node(node_above, 'U', maze) + get_next_node(node_below, 'D', maze)
-        elif curr_node_symbol == "\\":
-            return 1 + get_next_node(node_above, 'U', maze)
-        elif curr_node_symbol == '/':
-            return 1 + get_next_node(node_below, 'D', maze)
-        else:
-            return 1 + get_next_node(node_left, 'L', maze)
-
-    elif curr_direction == 'R':
-        if curr_node_symbol == '|':
-            return 1 + get_next_node(node_above, 'U', maze) + get_next_node(node_below, 'D', maze)
-        elif curr_node_symbol == "\\":
-            return 1 + get_next_node(node_below, 'D', maze)
-        elif curr_node_symbol == '/':
-            return 1 + get_next_node(node_above, 'U', maze)
-        else:
-            return 1 + get_next_node(node_right, 'R', maze)
-
-    elif curr_direction == 'U':
-        if curr_node_symbol == '-':
-            return 1 + get_next_node(node_right, 'R', maze) + get_next_node(node_left, 'L', maze)
-        elif curr_node_symbol == "\\":
-            return 1 + get_next_node(node_left, 'L', maze)
-        elif curr_node_symbol == '/':
-            return 1 + get_next_node(node_right, 'R', maze)
-        else:
-            return 1 + get_next_node(node_above, 'U', maze)
-
-    elif curr_direction == 'D':
-        if curr_node_symbol == '-':
-            return 1 + get_next_node(node_right, 'R', maze) + get_next_node(node_left, 'L', maze)
-        elif curr_node_symbol == "\\":
-            return 1 + get_next_node(node_right, 'R', maze)
-        elif curr_node_symbol == '/':
-            return 1 + get_next_node(node_left, 'L', maze)
-        else:
-            return 1 + get_next_node(node_below, 'D', maze)
-
-            # should never not return one of the two possible nodes
-    print('Something went wrong, check helper')
-    return -1
+def find_path(maze, start):
+    queue = [start]
+    # the start position and items in queue should have x, y, then a direction
+    # from the dict
+    seen = set()  # keep in mind this is unordered, but lets us not have to
+    # worry about dupes
+    while queue != []:
 
 
-print(get_next_node((0, 0), 'R', lines))
-print(len(seen.keys()))
-print(seen)
+find_path(lines, (0, 0))
