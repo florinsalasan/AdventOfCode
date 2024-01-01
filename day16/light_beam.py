@@ -56,4 +56,4 @@ def find_path(maze, start):
     while queue != []:
 
 
-find_path(lines, (0, 0))
+find_path(lines, (0, 0, 'R'))
