@@ -54,6 +54,12 @@ def find_path(maze, start):
     seen = set()  # keep in mind this is unordered, but lets us not have to
     # worry about dupes
     while queue != []:
+        curr = queue[0]
+        queue = queue[1:]
+        curr_direction = curr[-1]
+        if curr[0] >= 0 and curr[0] < WIDTH and curr[1] >= 0 and curr[1] < HEIGHT:
+            # means we are inside the grid still so can add it.
+            seen.add((curr[0], curr[1]))
 
 
 find_path(lines, (0, 0, 'R'))
