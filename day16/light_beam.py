@@ -56,10 +56,20 @@ def find_path(maze, start):
     while queue != []:
         curr = queue[0]
         queue = queue[1:]
-        curr_direction = curr[-1]
-        if curr[0] >= 0 and curr[0] < WIDTH and curr[1] >= 0 and curr[1] < HEIGHT:
+        curr_direction = directions[curr[-1]]
+        new_x = curr[0] + curr_direction[0]
+        new_y = curr[1] + curr_direction[1]
+        if new_x < 0 or new_x >= WIDTH or new_y < 0 or new_y >= HEIGHT:
             # means we are inside the grid still so can add it.
-            seen.add((curr[0], curr[1]))
+            continue
+
+        curr_char = maze[new_y][new_x]
+
+        if (curr_char == '.' or
+            (curr_char == '-' and curr_direction[1] != 0) or
+            (curr_char == '|' and curr_direction[0] != 0)):
+            queue.append((curr[0], curr[1], curr_direction))
+            seen.add(curr[0]
 
 
 find_path(lines, (0, 0, 'R'))
