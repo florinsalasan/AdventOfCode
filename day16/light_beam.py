@@ -67,9 +67,12 @@ def find_path(maze, start):
 
         if (curr_char == '.' or
             (curr_char == '-' and curr_direction[1] != 0) or
-            (curr_char == '|' and curr_direction[0] != 0)):
+                (curr_char == '|' and curr_direction[0] != 0)):
             queue.append((curr[0], curr[1], curr_direction))
-            seen.add(curr[0]
+            seen.add(curr[0], curr[1], curr_direction)
+
+        # not looking forward to doing all of the different cases
+        # for where the path goes next.
 
 
 find_path(lines, (0, 0, 'R'))
