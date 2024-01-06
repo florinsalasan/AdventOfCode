@@ -64,8 +64,8 @@ def find_path(maze, start):
             # out of bounds, try next value in queue
             continue
 
-        new_x = x + dx
-        new_y = y + dy
+        # new_x = x + dx
+        # new_y = y + dy
 
         seen.add((x, y, dx, dy))
 
@@ -73,7 +73,16 @@ def find_path(maze, start):
 
         if curr_char == '.' or (curr_char == '-' and dy == 0) or (curr_char == '|' and dx == 0):
             # continue in the same direction
-            queue.append((new_x, new_y, dx, dy))
+            queue.append((x + dx, y + dy, dx, dy))
+        # need to expand the conditional since this will double dip if the first conditional goes
+        elif curr_char == '-' and dy != 0:
+            # splits horizontally left and right, so same y value, x +/- 1 value added to queue
+            queue.append((x + 1, y, 1, 0))
+            queue.append((x - 1, y, -1, 0))
+        elif curr_char == '|' and dx != 0:
+            queue.append((x, y + 1, 0, 1))
+            queue.append((x, y - 1, 0, -1))
+        elif curr_char == '\\':
 
 
 find_path(lines, (0, 0, 'R'))
