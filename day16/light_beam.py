@@ -37,18 +37,12 @@ WIDTH = len(lines[0])
 #     'D': [0, 1]
 # }
 
-# create a dict that contains all of the coordinates of the
-# tiles that a lightbeam has passed through
-seen = {}
-
-# so my recursive effort was bad, will try doing this iteratively
-# don't know how well this will work given that there are splits in the beam
-
 # so the pathing always begins top left corner and continues towards the right
 # then the rules with the mirrors and splitters come into effect.
 
 
 def find_path(maze, start):
+    fillable = [list(('.'*(WIDTH - 1))) for x in range(HEIGHT)]
     queue = [start]
     # the start position and items in queue should have x, y, then a direction
     # from the dict
@@ -64,7 +58,7 @@ def find_path(maze, start):
             continue
 
         # check if x, y are valid indices
-        if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
+        if x < 0 or x >= WIDTH - 1 or y < 0 or y >= HEIGHT:
             # out of bounds, try next value in queue
             continue
 
@@ -73,6 +67,7 @@ def find_path(maze, start):
 
         seen.add((x, y, dx, dy))
         coords.add((x, y))
+        fillable[y][x] = '#'
 
         curr_char = maze[y][x]
 
@@ -108,6 +103,10 @@ def find_path(maze, start):
         print(curr_char)
 
     print(coords)
+    for line in fillable:
+        print(line)
+
+    print(len(coords))
 
 
 find_path(lines, (0, 0, 1, 0))
