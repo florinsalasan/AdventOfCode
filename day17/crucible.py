@@ -35,65 +35,68 @@ DIRECTIONS = {'r': [1, 0],
               'u': [0, -1]}
 
 
-def find_path(grid, start=(0, 0, ''), end=(WIDTH - 1, HEIGHT - 1)):
-    # I'm going to base this off of the algorithm description from
-    # brilliant.org hopefully, this works out since it would be the
-    # first time I've implemented dijkstra's
+def find_path(grid, start=(0, 0, '')):
+    # Generate all nodes and put them inside of an unvisited
+    # nodes list, along with initiating the distance to infinity
+    unvisited_nodes = []
 
-    queue = []
-    dists = {}
-    seen = set()
-    dir = ''
-    count_dir = 0
-    for y in range(HEIGHT):
-        for x in range(WIDTH):
-            dists[(x, y)] = float('inf')
+    shortest_paths = {}
 
-    dists[(0, 0)] = 0
-    # so starting with start, update the values of the surrounding nodes
-    # to their heat loss values + whatever the current value is of the
-    # node currently on.
+    previous_nodes = {}
 
-    # get the values of the nodes surrounding the current nodes
-    queue.append(start)
-    while queue != []:
-        # get the coordinates of the curr_node
-        x, y, curr_dir = queue.pop(0)
-        x = int(x)
-        y = int(y)
-        if (x, y) in seen:
-            continue
-        seen.add((x, y))
-        curr_dist = dists[(x, y)]
-        print(curr_dist)
-        surrounding_nodes_coords = []
-        valid_coords = []
-        for direction in DIRECTIONS.keys():
-            surrounding_nodes_coords.append(
-                (x + DIRECTIONS[direction][0], y + DIRECTIONS[direction][1], direction))
-        for surrounding_coords in surrounding_nodes_coords:
-            new_x = surrounding_coords[0]
-            new_y = surrounding_coords[1]
-            if new_y < 0 or new_y > HEIGHT - 1 or new_x < 0 or new_x > HEIGHT - 1:
-                continue
-            else:
-                if not (new_x, new_y) in seen:
-                    valid_coords.append(surrounding_coords)
+    for x in range(WIDTH):
+        for y in range(HEIGHT):
+            curr_node = (x, y)
+            unvisited_nodes.append(curr_node)
+            shortest_paths[curr_node] = float('inf')
 
-        # At this point have the coordinates for the surrounding nodes that are within bounds.
-        # From here generate the distance of the surrounding nodes by adding the node values in the grid to the
-        # curr_node distance value also need to have a way to consider the count_dir if it reaches 3.
+    # initialize the start node to have a dist of 0
+    shortest_paths[(0, 0)] = 0
+    while unvisited_nodes:
+        # Get the node with the smallest value, first iteration
+        # will be the start node with a value of 0
+        curr_min_node = None
+        for node in unvisited_nodes:
+            if curr_min_node is None:
+                curr_min_node = node
+            elif shortest_paths[node] < shortest_paths[curr_min_node]:
+                curr_min_node = node
 
-        # I think I want to implement the basic version first then add in the constraint
-        # of moving at most 3 tiles in the same direction
-        for node in valid_coords:
-            dists[(node[0], node[1])] = int(grid[node[1]][node[0]]) + curr_dist
-            print(node)
-            print(dists[(node[0], node[1])])
-            queue.append(node)
-        valid_coords = []
+        # have the node with the smallest value, get the surrounding nodes
+        neighbours = get_surrounding_nodes(curr_min_node)
+        for neighbour in neighbours:
+            x = neighbour[0]
+            y = neighbour[1]
+            # this sum is the value of the distance so far plus the value
+            # of a neighbour coord which acts as the weighted edge
+            test_value = shortest_paths[curr_min_node] + \
+                int(grid[y][x])
+            if test_value < shortest_paths[(x, y)]:
+                shortest_paths[(x, y)] = test_value
+                # set a value for previous_nodes
+                previous_nodes[(x, y)] = curr_min_node
 
-    print(dists)
+        unvisited_nodes.remove(curr_min_node)
+
+    return previous_nodes, shortest_paths
 
 
-find_path(lines)
+def get_surrounding_nodes(curr_coords):
+    # given an object that has x, y in first two indices,
+    # return the nodes that are connected and ensure that
+    # the nodes are in bounds.
+    possible_nodes = []
+    to_return = []
+    for direction in DIRECTIONS.keys():
+        possible_nodes.append(
+            (curr_coords[0] + DIRECTIONS[direction][0], curr_coords[1] + DIRECTIONS[direction][1], direction))
+    for potential in possible_nodes:
+        x = potential[0]
+        y = potential[1]
+        if x >= 0 and x < WIDTH and y >= 0 and y < HEIGHT:
+            to_return.append(potential)
+
+    return to_return
+
+
+print(find_path(lines))
