@@ -55,7 +55,11 @@ def find_path(grid, max_count):
     seen = set()
 
     while queue:
+        print('queue:')
+        print(queue)
+        print('end queue')
         cost, position, steps = heappop(queue)
+        print(position)
         if position[0] == end:
             return cost
         if (position, steps) in seen:
@@ -66,6 +70,20 @@ def find_path(grid, max_count):
         # next steps and then push them into the queue if they
         # are in bounds.
         surrounding = get_next_nodes(position)
+        curr_dir = position[-1]
+        for key in surrounding.keys():
+            x = surrounding[key][0][0]
+            y = surrounding[key][0][1]
+            surr_dir = surrounding[key][1]
+            if x >= 0 and x < WIDTH and y >= 0 and y < HEIGHT:
+                new_cost = int(grid[y][x]) + cost
+                if curr_dir == surr_dir:
+                    if steps < 3:
+                        heappush(queue,
+                                 (new_cost, (surrounding[key][0], surrounding[key][1]), steps + 1))
+                else:
+                    heappush(
+                        queue, (new_cost, (surrounding[key][0], surrounding[key][1]), 1))
 
 
 def get_next_nodes(curr_node):
@@ -100,4 +118,4 @@ def get_next_nodes(curr_node):
     return surrounding
 
 
-find_path(pruned, 3)
+print(find_path(pruned, 3))
