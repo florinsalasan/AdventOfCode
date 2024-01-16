@@ -59,6 +59,47 @@ def draw_right(count, curr_left_right):
     return new_curr
 
 
+def get_block_idxs(grid, y_idx):
+    # check if a block has a line leading out from the top and bottom of
+    # it otherwise it is an end block and should not be counted towards
+    # entering blocks in the main function. is_edge is false iff the
+    # lines connecting to blocks are both above and below, if they are
+    # only above or only below it must be an edge.
+
+    # Absolutely brutal spaghetti code, apologies to future me and
+    # any other person reading this.
+    gridline = grid[y_idx]
+    # edge for real checks if on the first or last row which will always
+    # be an edge
+    edge_for_real = False
+    if y_idx == 0 or y_idx == len(grid) - 1:
+        edge_for_real = True
+    blocks = []
+    curr_start = 0
+    while curr_start < len(gridline):
+        # is_edge checks for edges on rows in the middle of the grid
+        is_edge = False
+        if gridline[curr_start] == '#':
+            curr_end = curr_start
+            while curr_end + 1 < len(gridline) and gridline[curr_end + 1] == '#':
+                curr_end += 1
+            if not edge_for_real:
+                if y_idx - 1 >= 0 and grid[y_idx - 1][curr_start] == '#' and grid[y_idx - 1][curr_end] == '#':
+                    is_edge = True
+                elif y_idx + 1 < len(grid) and grid[y_idx + 1][curr_start] == '#' and grid[y_idx + 1][curr_end] == '#':
+                    is_edge = True
+                else:
+                    is_edge = False
+
+            either_or = is_edge or edge_for_real
+            blocks.append((curr_start, curr_end, either_or))
+            curr_start += curr_end - curr_start + 1
+        else:
+            curr_start += 1
+
+    return blocks
+
+
 for line in lines:
     dir, count, colour = line.split(' ')
     count = int(count)
@@ -163,20 +204,62 @@ for line in lines:
 
 count = 0
 
-for idx, line in enumerate(grid):
-    if idx == 0 or idx == len(grid) - 1:
-        count += line.count('#')
-        print('first or last')
-        print(count)
+# yeah naive approach did not work, puzzle input is more complex than
+# the test input as expected.
+
+# check if a point is enclosed in the trench with counting the num of
+# times an index have passed a block of '#'. If it is odd, it is inside
+# of the trench, if it is even it is outside the trench.
+
+# wrote the grid to a file so i can visualize the issues better, since
+# the console output is cut off in my text editor.
+
+#    stringy_grid = []
+#    for item in grid:
+#        stringy_grid.append(''.join(item))
+#
+#    with open('/Users/florinsalasan/VSC_Projects/advent2023/day18/grid.txt', 'w') as fp:
+#        fp.write('\n'.join(stringy_grid))
+
+# Generate the dug up count here
+for line_idx, line in enumerate(grid):
+    block_count = 0
+    inside_edges = 0
+    blocks = get_block_idxs(grid, line_idx)
+    print(blocks)
+    if len(blocks) == 1:
+        count += blocks[0][1] - blocks[0][0] + 1
     else:
-        stringified = ''.join(line)
-        first_idx = stringified.find('#')
-        second_idx = stringified.find('#', first_idx + 1)
-        while stringified.find('#', second_idx + 1) != -1:
-            second_idx = stringified.find('#', second_idx + 1)
-        count += second_idx - first_idx + 1
-        print('middle')
-        print(second_idx, first_idx)
-        print(count)
+        block_idx = 0
+        while block_idx < len(grid):
+            # have the info regarding whether or not the block is an edge
+            # or not, need to count in different ways depending on each.
+            block = blocks[block_idx]
+            start, end, is_edge = block
+            if is_edge and block_count % 2 != 1:
+                # This block is an edge on the outside and the dug up
+                # amount is end - start + 1
+                count += end - start + 1
+                block_idx += 1
+            elif is_edge:
+                inside_edges += end - start + 1
+                count += end - start + 1
+                block_idx += 1
+            else:
+                # TODO: Logic regarding block count needs to be fixed, also
+                # Not iterating in while loop properly
+
+                # everything from start to the next non edge block end
+                # is dug up and inside_edges is subtracted to avoid
+                # double counting those blocks
+                check_idx = block_idx + 1
+                while check_idx < len(blocks) and blocks[check_idx][-1]:
+                    check_idx += 1
+                # found next non edge to close this section
+                last_value = blocks[check_idx][1]
+                count += last_value - start + 1 - inside_edges
+                inside_edges = 0
 
 print(count)
+
+print(WIDTH, HEIGHT)
