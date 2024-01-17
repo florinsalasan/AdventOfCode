@@ -231,9 +231,10 @@ for line_idx, line in enumerate(grid):
         count += blocks[0][1] - blocks[0][0] + 1
     else:
         block_idx = 0
-        while block_idx < len(grid):
+        while block_idx < len(blocks):
             # have the info regarding whether or not the block is an edge
             # or not, need to count in different ways depending on each.
+            print(len(blocks), block_idx)
             block = blocks[block_idx]
             start, end, is_edge = block
             if is_edge and block_count % 2 != 1:
@@ -246,9 +247,6 @@ for line_idx, line in enumerate(grid):
                 count += end - start + 1
                 block_idx += 1
             else:
-                # TODO: Logic regarding block count needs to be fixed, also
-                # Not iterating in while loop properly
-
                 # everything from start to the next non edge block end
                 # is dug up and inside_edges is subtracted to avoid
                 # double counting those blocks
@@ -256,9 +254,12 @@ for line_idx, line in enumerate(grid):
                 while check_idx < len(blocks) and blocks[check_idx][-1]:
                     check_idx += 1
                 # found next non edge to close this section
-                last_value = blocks[check_idx][1]
+                # subtract 1 from check_idx since we increment it
+                # one too many times in the above while loop
+                last_value = blocks[check_idx - 1][1]
                 count += last_value - start + 1 - inside_edges
                 inside_edges = 0
+                block_idx = check_idx
 
 print(count)
 
