@@ -83,7 +83,7 @@ def get_block_idxs(grid, y_idx):
             curr_end = curr_start
             while curr_end + 1 < len(gridline) and gridline[curr_end + 1] == '#':
                 curr_end += 1
-            if not edge_for_real:
+            if not edge_for_real and curr_start != curr_end:
                 if y_idx - 1 >= 0 and grid[y_idx - 1][curr_start] == '#' and grid[y_idx - 1][curr_end] == '#':
                     is_edge = True
                 elif y_idx + 1 < len(grid) and grid[y_idx + 1][curr_start] == '#' and grid[y_idx + 1][curr_end] == '#':
@@ -261,6 +261,7 @@ for line_idx, line in enumerate(grid):
                 inside_edges = 0
                 block_idx = check_idx
 
+    print(count)
 print(count)
 
 print(WIDTH, HEIGHT)
