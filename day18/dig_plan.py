@@ -9,7 +9,6 @@ with open(sys.argv[1]) as input_file:
 if lines[-1] == '' or lines[-1] == '\n':
     lines = lines[:-1]
 
-print(lines)
 
 max_up = 0
 max_down = 0
@@ -104,7 +103,6 @@ for line in lines:
     dir, count, colour = line.split(' ')
     count = int(count)
     dir = dir.lower()
-    print(max_down)
     if dir == 'u':
         new_curr = move_up(count, curr_up_down)
         curr_up_down = new_curr
@@ -129,12 +127,10 @@ for line in lines:
         if curr_left_right < max_left:
             max_left = curr_left_right
 
-print(max_left, max_up, max_right, max_down)
 
 WIDTH = abs(max_right - max_left) + 1
 HEIGHT = abs(max_down - max_up) + 1
 
-print(WIDTH, HEIGHT)
 
 # create the grid, and a path like we've done before, then count enclosed
 # spaces like we've also done before
@@ -158,41 +154,33 @@ for line in lines:
     count = int(count)
     dir = dir.lower()
 
-    print(curr_left_right, curr_up_down, dir)
     if dir == 'u':
         new_curr = draw_up(count, curr_up_down)
-        print('new_curr: ' + str(new_curr))
         while curr_up_down != new_curr:
             grid[curr_up_down][curr_left_right] = '#'
-            print('curr_ud: ' + str(curr_up_down))
             curr_up_down -= 1
 
     elif dir == 'd':
         new_curr = draw_down(count, curr_up_down)
-        print('new_curr: ' + str(new_curr))
         while curr_up_down != new_curr:
             grid[curr_up_down][curr_left_right] = '#'
-            print('curr_ud: ' + str(curr_up_down))
             curr_up_down += 1
 
     elif dir == 'r':
         new_curr = draw_right(count, curr_left_right)
-        print('new_curr: ' + str(new_curr))
         while curr_left_right != new_curr:
             grid[curr_up_down][curr_left_right] = '#'
-            print('curr_lr: ' + str(curr_left_right))
             curr_left_right += 1
 
     elif dir == 'l':
         new_curr = draw_left(count, curr_left_right)
-        print('new_curr: ' + str(new_curr))
         while curr_left_right != new_curr:
             grid[curr_up_down][curr_left_right] = '#'
-            print('curr_lr: ' + str(curr_left_right))
             curr_left_right -= 1
 
     for item in grid:
         print(item)
+    print('\n')
 
 # Outline of the trench should be made in the grid at this point. Need to
 # dig out the interior now, by that i mean just get the distance between
@@ -234,7 +222,6 @@ for line_idx, line in enumerate(grid):
         while block_idx < len(blocks):
             # have the info regarding whether or not the block is an edge
             # or not, need to count in different ways depending on each.
-            print(len(blocks), block_idx)
             block = blocks[block_idx]
             start, end, is_edge = block
             if is_edge and block_count % 2 != 1:
@@ -256,12 +243,14 @@ for line_idx, line in enumerate(grid):
                 # found next non edge to close this section
                 # subtract 1 from check_idx since we increment it
                 # one too many times in the above while loop
-                last_value = blocks[check_idx - 1][1]
-                count += last_value - start + 1 - inside_edges
+                if check_idx < len(blocks):
+                    last_value = blocks[check_idx][1]
+                    print(last_value, start, inside_edges)
+                    count += last_value - start + 1 - inside_edges
                 inside_edges = 0
                 block_idx = check_idx
 
     print(count)
 print(count)
 
-print(WIDTH, HEIGHT)
+print(HEIGHT * WIDTH)
