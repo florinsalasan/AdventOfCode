@@ -47,6 +47,7 @@ def get_block_idxs(gridline, y_idx):
 
     # need a way to have the y_idx passed in, it is the key for trenched so
     # should work I think
+    print(gridline, y_idx)
     edge_for_real = False
     # check against max up for first row
     if y_idx == max_up or y_idx == HEIGHT - 1:
@@ -94,6 +95,7 @@ for line in lines:
     if dir == '3':
         new_curr = move_up(count, curr_up_down)
         while curr_up_down > new_curr:
+            print(curr_left_right)
             if curr_up_down in trenched:
                 trenched[curr_up_down].append(curr_left_right)
             else:
@@ -122,17 +124,31 @@ for line in lines:
     # TODO: change right and left to add to trenched as well.
     elif dir == '0':
         new_curr = move_right(count, curr_left_right)
+        if curr_up_down in trenched:
+            trenched[curr_up_down].append(
+                (min(curr_left_right, new_curr), max(curr_left_right, new_curr)))
+        else:
+            trenched[curr_up_down] = (
+                min(curr_left_right, new_curr), max(curr_left_right, new_curr))
+
         curr_left_right = new_curr
         if curr_left_right > max_right:
             max_right = curr_left_right
 
     elif dir == '2':
         new_curr = move_left(count, curr_left_right)
+        if curr_up_down in trenched:
+            trenched[curr_up_down].append(
+                (min(curr_left_right, new_curr), max(curr_left_right, new_curr)))
+        else:
+            trenched[curr_up_down] = (
+                min(curr_left_right, new_curr), max(curr_left_right, new_curr))
         curr_left_right = new_curr
         if curr_left_right < max_left:
             max_left = curr_left_right
 
 print('finished moving')
+print(trenched)
 
 WIDTH = abs(max_right - max_left) + 1
 HEIGHT = abs(max_down - max_up) + 1
