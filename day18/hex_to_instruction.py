@@ -140,8 +140,6 @@ HEIGHT = abs(max_down - max_up) + 1
 print(WIDTH, HEIGHT)
 print(WIDTH * HEIGHT)
 
-memoed = {}
-
 # grid = []
 # for i in range(HEIGHT):
 # grid.append(list('.' * WIDTH))
@@ -154,40 +152,46 @@ memoed = {}
 # would likely require large amounts of computation to get the blocks of
 # each line first to compare.
 
-def get_dug_up_line(line):
+def get_dug_up_area(trenched_dict):
     # For any give line in the grid, should be able to determine if we are inside or
     # outside of the trench with a basic ray casting imitation by 'moving' left to
     # right, count non edges to see if we are currently inside or outside of the space
     # start at 0, if non edge increment counting everything inside until new non edge
     # decrement back to 0
 
-    if line in memoed.keys():
-        return memoed[line]
+    memoed = {}
 
-    # otherwise need to do the counting ourselves
+    for key in trenched_dict.keys():
+        if key in memoed.keys():
+            return memoed[key]
 
-    blocks = get_block_idxs(line)
-    inside = False
-    count = 0
-    block_idx = 0
-    curr_starting_idx = 0
+        # otherwise need to do the counting ourselves
 
-    while block_idx < len(blocks):
-        print(blocks[block_idx])
-        start, end, is_edge = blocks[block_idx]
+        blocks = get_block_idxs(key, trenched[key])
+        inside = False
+        count = 0
+        block_idx = 0
+        curr_starting_idx = 0
 
-        if inside and not is_edge:
-            # found the end of the current open section of the trench, count
-            # the space from curr_starting_idx to end of the block we're on
-            count += end - curr_starting_idx + 1
-        elif not inside and not is_edge:
-            curr_starting_idx = start
-        if not is_edge:
-            # flip the inside bool here so that both if blocks don't run above.
-            inside = not inside
-        if is_edge and not inside:
-            count += end - start + 1
+        while block_idx < len(blocks):
+            print(blocks[block_idx])
+            start, end, is_edge = blocks[block_idx]
 
-        block_idx += 1
+            if inside and not is_edge:
+                # found the end of the current open section of the trench, count
+                # the space from curr_starting_idx to end of the block we're on
+                count += end - curr_starting_idx + 1
+            elif not inside and not is_edge:
+                curr_starting_idx = start
+            if not is_edge:
+                # flip the inside bool here so that both if blocks don't run above.
+                inside = not inside
+            if is_edge and not inside:
+                count += end - start + 1
 
-    return count
+            block_idx += 1
+
+        return count
+
+
+print(get_dug_up_area(trenched))
