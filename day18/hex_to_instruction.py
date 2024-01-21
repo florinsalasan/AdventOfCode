@@ -38,47 +38,8 @@ def move_right(count, curr_left_right):
     return curr_left_right
 
 
-def get_block_idxs(gridline, y_idx):
-    # check if a block has a line leading out from the top and bottom of
-    # it otherwise it is an end block and should not be counted towards
-    # entering blocks in the main function. is_edge is false iff the
-    # lines connecting to blocks are both above and below, if they are
-    # only above or only below it must be an edge.
-
-    # need a way to have the y_idx passed in, it is the key for trenched so
-    # should work I think
-    print(gridline, y_idx)
-    edge_for_real = False
-    # check against max up for first row
-    if y_idx == max_up or y_idx == HEIGHT - 1:
-        edge_for_real = True
-    blocks = []
-    curr_start = 0
-    while curr_start < len(gridline):
-        # is_edge checks for edges on rows in the middle of the grid
-        is_edge = False
-        if gridline[curr_start] == '#':
-            curr_end = curr_start
-            while curr_end + 1 < len(gridline) and gridline[curr_end + 1] == '#':
-                curr_end += 1
-            if not edge_for_real and curr_start != curr_end:
-                if y_idx - 1 >= 0 and grid[y_idx - 1][curr_start] == '#' and grid[y_idx - 1][curr_end] == '#':
-                    is_edge = True
-                elif y_idx + 1 < len(grid) and grid[y_idx + 1][curr_start] == '#' and grid[y_idx + 1][curr_end] == '#':
-                    is_edge = True
-                else:
-                    is_edge = False
-
-            either_or = is_edge or edge_for_real
-            blocks.append((curr_start, curr_end, either_or))
-            curr_start += curr_end - curr_start + 1
-        else:
-            curr_start += 1
-
-    return blocks
-
-
 trenched = {}
+
 
 for line in lines:
     _, __, colour = line.split(' ')
@@ -95,7 +56,6 @@ for line in lines:
     if dir == '3':
         new_curr = move_up(count, curr_up_down)
         while curr_up_down > new_curr:
-            print(curr_left_right)
             if curr_up_down in trenched:
                 trenched[curr_up_down].append(curr_left_right)
             else:
@@ -121,15 +81,14 @@ for line in lines:
         if curr_up_down > max_down:
             max_down = curr_up_down
 
-    # TODO: change right and left to add to trenched as well.
     elif dir == '0':
         new_curr = move_right(count, curr_left_right)
         if curr_up_down in trenched:
             trenched[curr_up_down].append(
                 (min(curr_left_right, new_curr), max(curr_left_right, new_curr)))
         else:
-            trenched[curr_up_down] = (
-                min(curr_left_right, new_curr), max(curr_left_right, new_curr))
+            trenched[curr_up_down] = [(
+                min(curr_left_right, new_curr), max(curr_left_right, new_curr))]
 
         curr_left_right = new_curr
         if curr_left_right > max_right:
@@ -141,25 +100,67 @@ for line in lines:
             trenched[curr_up_down].append(
                 (min(curr_left_right, new_curr), max(curr_left_right, new_curr)))
         else:
-            trenched[curr_up_down] = (
-                min(curr_left_right, new_curr), max(curr_left_right, new_curr))
+            trenched[curr_up_down] = [(
+                min(curr_left_right, new_curr), max(curr_left_right, new_curr))]
         curr_left_right = new_curr
         if curr_left_right < max_left:
             max_left = curr_left_right
 
-print('finished moving')
-print(trenched)
 
 WIDTH = abs(max_right - max_left) + 1
 HEIGHT = abs(max_down - max_up) + 1
 
-print(WIDTH, HEIGHT)
-print(WIDTH * HEIGHT)
 
-# grid = []
-# for i in range(HEIGHT):
-# grid.append(list('.' * WIDTH))
+def get_block_idxs(x_idxs, y_idx):
+    removed_dupes = set()
+    actual_x_idxs = []
+    for values in x_idxs:
+        # This is already the blocks in a tuple, just need to remove
+        # duplicates that are equal to an edge for a tuple, also should
+        # look above and below to see if it is a an edge or not.
+        if type(values) is tuple:
+            removed_dupes.add(values[0])
+            removed_dupes.add(values[1])
+            actual_x_idxs.append(values)
+            continue
+        # need to add all of the tuples first imo, otherwise could be
+        # checking against nothing and adding the duped index when it
+        # shouldn't be there.
+        if type(values) is not tuple:
+            continue
+    for values2 in x_idxs:
+        if values2 not in removed_dupes:
+            if type(values2) is tuple:
+                continue
+            removed_dupes.add(values2)
+            actual_x_idxs.append((values2,))
+    # should sort this as well from lowest value to highest
+    if len(actual_x_idxs) > 1:
+        for i in range(len(actual_x_idxs) - 1):
+            for j in range(len(actual_x_idxs) - i - 1):
+                if actual_x_idxs[j][0] < actual_x_idxs[j + 1][0]:
+                    temp = actual_x_idxs[j]
+                    actual_x_idxs[j] = actual_x_idxs[j + 1]
+                    actual_x_idxs[j + 1] = temp
 
+    to_return = []
+
+    for block in actual_x_idxs:
+        if len(block) == 1:
+            to_return.append((block[0], block[0], False))
+        else:
+            # check if the connections are both above or both below
+            if y_idx == 0 or y_idx == HEIGHT - 1:
+                to_return.append((block[0], block[1], True))
+                continue
+            elif (block[0] in trenched[y_idx - 1] and block[1] in trenched[y_idx + 1]) or (block[1] in trenched[y_idx - 1] and block[0] in trenched[y_idx + 1]):
+                to_return.append((block[0], block[1], False))
+                continue
+            else:
+                to_return.append((block[0], block[1], True))
+                continue
+
+    return to_return
 
 # TODO: change the function below to grab from trenched, memoize the
 # solution since there's bound to be repeats of lines.
@@ -167,6 +168,7 @@ print(WIDTH * HEIGHT)
 # use tons of memory with how large it is or memoized by blocks which
 # would likely require large amounts of computation to get the blocks of
 # each line first to compare.
+
 
 def get_dug_up_area(trenched_dict):
     # For any give line in the grid, should be able to determine if we are inside or
@@ -183,14 +185,13 @@ def get_dug_up_area(trenched_dict):
 
         # otherwise need to do the counting ourselves
 
-        blocks = get_block_idxs(key, trenched[key])
+        blocks = get_block_idxs(trenched[key], key)
         inside = False
         count = 0
         block_idx = 0
         curr_starting_idx = 0
 
         while block_idx < len(blocks):
-            print(blocks[block_idx])
             start, end, is_edge = blocks[block_idx]
 
             if inside and not is_edge:
@@ -207,7 +208,7 @@ def get_dug_up_area(trenched_dict):
 
             block_idx += 1
 
-        return count
+    return count
 
 
 print(get_dug_up_area(trenched))
