@@ -138,7 +138,7 @@ def get_block_idxs(x_idxs, y_idx):
     if len(actual_x_idxs) > 1:
         for i in range(len(actual_x_idxs) - 1):
             for j in range(len(actual_x_idxs) - i - 1):
-                if actual_x_idxs[j][0] < actual_x_idxs[j + 1][0]:
+                if actual_x_idxs[j][0] > actual_x_idxs[j + 1][0]:
                     temp = actual_x_idxs[j]
                     actual_x_idxs[j] = actual_x_idxs[j + 1]
                     actual_x_idxs[j + 1] = temp
@@ -179,13 +179,17 @@ def get_dug_up_area(trenched_dict):
 
     memoed = {}
 
+    total = 0
     for key in trenched_dict.keys():
-        if key in memoed.keys():
-            return memoed[key]
 
+        print(key)
         # otherwise need to do the counting ourselves
 
         blocks = get_block_idxs(trenched[key], key)
+        if tuple(blocks) in memoed.keys():
+            return memoed[tuple(blocks)]
+
+        print(blocks)
         inside = False
         count = 0
         block_idx = 0
@@ -208,7 +212,11 @@ def get_dug_up_area(trenched_dict):
 
             block_idx += 1
 
-    return count
+        memoed[tuple(blocks)] = count
+        total += count
+
+    return total
 
 
 print(get_dug_up_area(trenched))
+print(HEIGHT * WIDTH)
