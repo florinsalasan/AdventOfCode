@@ -48,7 +48,6 @@ for line in lines:
     # dir = colour[-3]
     # count = int(colour[2:-2], 16)
 
-    # print(dir, count, colour)
     count = int(colour[2:-3], 16)
 
     dir = colour[-3]
@@ -150,7 +149,7 @@ def get_block_idxs(x_idxs, y_idx):
             to_return.append((block[0], block[0], False))
         else:
             # check if the connections are both above or both below
-            if y_idx == 0 or y_idx == HEIGHT - 1:
+            if y_idx == max_up or y_idx == max_down:
                 to_return.append((block[0], block[1], True))
                 continue
             elif (block[0] in trenched[y_idx - 1] and block[1] in trenched[y_idx + 1]) or (block[1] in trenched[y_idx - 1] and block[0] in trenched[y_idx + 1]):
@@ -182,14 +181,13 @@ def get_dug_up_area(trenched_dict):
     total = 0
     for key in trenched_dict.keys():
 
-        print(key)
         # otherwise need to do the counting ourselves
 
         blocks = get_block_idxs(trenched[key], key)
         if tuple(blocks) in memoed.keys():
-            return memoed[tuple(blocks)]
+            total += memoed[tuple(blocks)]
+            continue
 
-        print(blocks)
         inside = False
         count = 0
         block_idx = 0
@@ -219,4 +217,3 @@ def get_dug_up_area(trenched_dict):
 
 
 print(get_dug_up_area(trenched))
-print(HEIGHT * WIDTH)
