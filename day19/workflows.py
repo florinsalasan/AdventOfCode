@@ -23,13 +23,18 @@ class parts_and_values:
             name = prop[0]
             value = prop[2:]
             if name == 'a':
-                self.a = value
+                self.a = int(value)
             elif name == 's':
-                self.s = value
+                self.s = int(value)
             elif name == 'x':
-                self.x = value
+                self.x = int(value)
             elif name == 'm':
-                self.m = value
+                self.m = int(value)
+
+        self.value = self.m + self.x + self.s + self.a
+
+    def __str__(self):
+        return ''.join(['m: ', str(self.m), ', x: ', str(self.x), ', s: ', str(self.s), ', a: ', str(self.a)])
 
 
 class decision_node:
@@ -58,6 +63,7 @@ class decision_node:
 class ruleset:
 
     def __init__(self, input_str):
+        self.input_ = input_str
         if ':' not in input_str:
             self.result = input_str
             self.prop = None
@@ -68,7 +74,7 @@ class ruleset:
         colon_idx = input_str.find(':')
         self.result = input_str[colon_idx + 1:]
         self.prop = input_str[:comp_idx]
-        self.prop_value = input_str[comp_idx + 1:colon_idx]
+        self.prop_value = int(input_str[comp_idx + 1:colon_idx])
         self.prop_comp = input_str[comp_idx]
 
     def __str__(self):
@@ -79,6 +85,8 @@ class ruleset:
     def passed_rule(self, parts_and_values):
         # check self.prop in parts_and_values.self.prop
         curr_prop = self.prop
+        if curr_prop is None:
+            return self.result
         curr_comp = self.prop_comp
         # get the value from the passed in part
         if curr_prop == 'x':
@@ -115,13 +123,45 @@ for part in parts:
     classed_parts.append(parts_and_values(part))
 
 total = 0
-for unclassified_part in classed_parts:
-    # go through decsion nodes until result is either 'A' or 'R'
-    # if result is 'A' sum the properties in the part and add it to the total
-    curr_flow = noded_workflows['in']
-    curr_result = 'not found'
+cworkflow = noded_workflows['in']
+for part in classed_parts:
+    # for each part go through the workflow until next reaching a result of 'A'
+    # or 'R', if accepted add the value of the part to the total
+    passed = False
+    count = 0
+    # workflows always begins with 'in'
+    result = 'not found yet'
+    while (not passed and count < len(cworkflow.classed_rules.keys()) and
+           result != 'A' and result != 'R'):
 
-    while curr_result != 'A' and curr_result != 'R':
-        # check the current part against each rule in the ruleset
-        for rule in range(len(curr_flow.classed_rules.keys())):
-            curr_flow.classed_rules[rule].passed_rule(unclassified_part)
+        print('part then rule: ')
+        print(str(part))
+        print(cworkflow.classed_rules[count].input_)
+        if cworkflow.classed_rules[count].passed_rule(part):
+            # the part passes the rule, get the result from the current rule to
+            # update cworkflow, to the next workflow if the result is not 'A' or 'R'
+            if cworkflow.classed_rules[count].result == 'A':
+                print('inside of accepted')
+                print(cworkflow.classed_rules[count].input_)
+                total += part.value
+                print(total, part.value)
+                # break out of the while loop by making count out of bounds
+                count += len(cworkflow.classed_rules.keys()) + 1
+                # should set result equal to the above conditional in case the special
+                # conditions were to ever change but they won't
+                result = 'A'
+                cworkflow = noded_workflows['in']
+
+            elif cworkflow.classed_rules[count].result == 'R':
+                count += len(cworkflow.classed_rules.keys()) + 1
+                result = 'R'
+                cworkflow = noded_workflows['in']
+            else:
+                print('passed and going to: ' +
+                      cworkflow.classed_rules[count].result)
+                cworkflow = noded_workflows[cworkflow.classed_rules[count].result]
+                count = -1
+
+        count += 1
+
+print(total)
