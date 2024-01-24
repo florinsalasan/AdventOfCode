@@ -154,3 +154,9 @@ for workflow in workflows:
         root = decision_node(workflow, default_ranges)
 
 decision_tree(root)
+
+# My naming conventions and classes need work. They way information is updated in
+# this sorta decision tree is convoluted and I should rework it because coming back
+# to what I was working on the day before has been confusing every time and I don't
+# remember why I was implementing certain things the way I am along with questions
+# about how the implementation is even supposed to work.
