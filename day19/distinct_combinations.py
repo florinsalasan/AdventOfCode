@@ -150,7 +150,7 @@ class rule_condition:
 
 class workflow:
 
-    def __init__(self, input_str, ranges):
+    def __init__(self, input_str, ranges, parent):
         # given a string containing all of the information about a workflow,
         # generate the object.
 
@@ -169,6 +169,7 @@ class workflow:
             else:
                 classed_rules[i] = rule_condition(rule,
                                                   classed_rules[i - 1].inversed_ranges)
+        self.classed_rules = classed_rules
         self.combinations = None
         # Once the rules in the workflow have been generated, create the workflows
         # from them passing in the inversed ranges when necessary and the updated
@@ -192,12 +193,17 @@ class workflow:
                 combinations = classed_rules[key].get_combinations()
                 print(combinations)
                 self.combinations = combinations
+                # TERRIBLE DESIGN??? If there are two paths that are accepted
+                # in the same workflow wouldn't the combinations get overwritten
+                # so using workflow.combinations is useless, get it from the rule
                 continue
             new_input_str = workflow_name_to_str[new_name]
-            new_workflow = workflow(new_input_str, classed_rules[key].ranges)
+            new_workflow = workflow(
+                new_input_str, classed_rules[key].ranges, self)
             next_workflows.append(new_workflow)
 
         self.next_workflows = next_workflows
+        self.parent = parent
 
     def __str__(self):
         return self.inputted_str
@@ -223,17 +229,30 @@ for _workflow in workflows:
 
 for _workflow in workflows:
     if _workflow[:2] == 'in':
-        root = workflow(_workflow, starter_ranges)
+        root = workflow(_workflow, starter_ranges, None)
 
 # TODO: Get a better method of summing the combinations than just taking the printed values
-total = 0
-
 curr_node = root
-while curr_node is not None:
-    if curr_node.combinations:
-        total += curr_node.combinations
-    if curr_node.next_workflows:
-        for next_workflow in curr_node.next_workflows:
-            curr_node = next_workflow
+# The tree like object should be built after creating the root node, just a matter
+# of traversing it now
+# do dfs or bfs idc, and if a node has a combinations value return it/increment count
 
-    curr_node = None
+test_input = 15320205000000+14486526000000+20576430000000+8281393428000 + \
+    35328000000000+26599296000000+16792704000000+21856640000000+8167885440000
+
+total = 0
+q = [root]
+# Have the root from there traverse to each of the child nodes
+while q:
+    curr_workflow = q.pop(0)
+    # add all next_workflows to the queue
+    for next_workflow in curr_workflow.next_workflows:
+        q.append(next_workflow)
+    for key in curr_workflow.classed_rules.keys():
+        rule = curr_workflow.classed_rules[key]
+        if rule.next_workflow == 'A':
+            total += rule.get_combinations()[0]
+
+
+print('\n')
+print(total)
