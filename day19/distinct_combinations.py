@@ -37,7 +37,7 @@ class rule_condition:
         self.inversed_valid = True
         self.valid = True
         # the ranges should be fully updated by the time combinations are calculated
-        self.combinations = self.get_combinations()
+        self.combinations, self.final_ranges = self.get_combinations()
         if ':' not in self.inputted_str:
             self.next_workflow = self.inputted_str
             self.category = None
@@ -73,6 +73,8 @@ class rule_condition:
         # off of a passed in inverse rule. Explanation is bad but I think I'll
         # be able to understand what I meant later on as well as I do writing it now.
         if self.comparison == '<':
+            # need to treat these as <
+            inclusive_value = self.value
             # restricting the ranges to be less than self.value, so update the ranges
             # if min value is larger than self.value then there are no valid entries
             # ie if the range we were given had 1500 < a < 2500 and the current rule
@@ -81,22 +83,23 @@ class rule_condition:
             # not needed for the level of complexity of this input but something to
             # think about implementing if computation ends up taking too long.
             # Basically new max is smaller than existing minimum
-            if curr_ranges[0] > self.value:
+            if curr_ranges[0] > inclusive_value:
                 self.valid = False
                 return curr_ranges
-            elif curr_ranges[1] > self.value:
-                curr_ranges[1] = self.value
+            elif curr_ranges[1] > inclusive_value:
+                curr_ranges[1] = inclusive_value
                 self.ranges[self.category] = curr_ranges
                 return curr_ranges
 
         # do the same thing as for '<' but now for '>'
-        if curr_ranges[1] < self.value:
+        inclusive_value = self.value
+        if curr_ranges[1] < inclusive_value:
             # the new range demands values higher than the current max to continue
             # along the workflow order so then no values would be valid anymore
             self.valid = False
             return curr_ranges
-        elif curr_ranges[0] < self.value:
-            curr_ranges[0] = self.value
+        elif curr_ranges[0] < inclusive_value:
+            curr_ranges[0] = inclusive_value
         self.ranges[self.category] = curr_ranges
         return curr_ranges
 
@@ -135,11 +138,14 @@ class rule_condition:
             return 0
         # initialize with 1 to multiply all together
         running_total = 1
+        range_diffs = []
         for key in self.ranges:
             curr_min, curr_max = self.ranges[key]
+            range_diffs.append(curr_max - curr_min - 1)
+
             running_total *= (curr_max - curr_min - 1)
 
-        return running_total
+        return running_total, range_diffs
 
 
 class workflow:
@@ -163,6 +169,7 @@ class workflow:
             else:
                 classed_rules[i] = rule_condition(rule,
                                                   classed_rules[i - 1].inversed_ranges)
+        self.combinations = None
         # Once the rules in the workflow have been generated, create the workflows
         # from them passing in the inversed ranges when necessary and the updated
         # range if not needed.
@@ -184,6 +191,7 @@ class workflow:
                 # need to get the range from the rule condition object
                 combinations = classed_rules[key].get_combinations()
                 print(combinations)
+                self.combinations = combinations
                 continue
             new_input_str = workflow_name_to_str[new_name]
             new_workflow = workflow(new_input_str, classed_rules[key].ranges)
@@ -199,10 +207,10 @@ class workflow:
 # it up since the root node will always be the 'in' workflow, so need to begin with
 # that and then generate it from there.
 starter_ranges = {
-    'x': [1, 4000],
-    'm': [1, 4000],
-    'a': [1, 4000],
-    's': [1, 4000],
+    'x': [0, 4001],
+    'm': [0, 4001],
+    'a': [0, 4001],
+    's': [0, 4001],
 }
 
 
@@ -216,3 +224,16 @@ for _workflow in workflows:
 for _workflow in workflows:
     if _workflow[:2] == 'in':
         root = workflow(_workflow, starter_ranges)
+
+# TODO: Get a better method of summing the combinations than just taking the printed values
+total = 0
+
+curr_node = root
+while curr_node is not None:
+    if curr_node.combinations:
+        total += curr_node.combinations
+    if curr_node.next_workflows:
+        for next_workflow in curr_node.next_workflows:
+            curr_node = next_workflow
+
+    curr_node = None
