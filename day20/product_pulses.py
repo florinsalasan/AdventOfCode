@@ -7,6 +7,20 @@ with open(sys.argv[1]) as input_file:
     lines = input_file.readlines()
 
 
+class conjunction:
+
+    def __init__(self, input_str):
+        self.input_str = input_str
+        print('conjucted')
+
+
+class broadcast:
+
+    def __init__(self, input_str):
+        self.input_str = input_str
+        print('broadcasted')
+
+
 class flip_flop:
 
     def __init__(self, input_str):
@@ -25,6 +39,10 @@ class generic_module:
         self.creation = None
         if prefix == '%':
             self.creation = flip_flop(input_str)
+        elif prefix == '&':
+            self.creation = conjunction(input_str)
+        elif items[0] == 'broadcaster':
+            self.creation = broadcast(input_str)
 
 
 modules = {}
