@@ -1,4 +1,5 @@
 import sys
+import heapq
 
 if len(sys.argv) != 2:
     sys.exit('usage: python product_pulses.py input.txt')
@@ -18,7 +19,7 @@ class broadcast:
         self.destinations = items[separator + 1:]
         print(self.title, self.destinations)
 
-    def _send(self):
+    def send_signal(self):
         # Only sends when receiving a signal from the button press, button press
         # always sends a single low pulse to the broadcast module.
         signals = []
@@ -79,6 +80,23 @@ class flip_flop:
         separator = items.index('->')
         self.destinations = items[separator + 1:]
         print(self.title, self.destinations)
+        self.on = False
+
+    def receive_signal(self, signal):
+        if signal[0] == 'low':
+            self.on = not self.on
+            self.send_signal()
+
+    def send_signal(self):
+        # only ever call this after receive_signal so that self.on is properly set
+        signals = []
+        if self.on:
+            signal_strength = 'high'
+        else:
+            signal_strength = 'low'
+        for dest in self.destinations:
+            signals.append((signal_strength, dest))
+        return signals
 
 
 class generic_module:
@@ -115,3 +133,13 @@ for line in lines:
 
 for key in modules.keys():
     print(key, modules[key])
+
+
+def loop(defined_modules, button_press_count):
+    # start count at 1 since there is a button pushed
+    count = 1
+    q = []
+    q.append(defined_modules['broadcaster'])
+    while q:
+        curr_module = q.pop(0)
+        curr_module.
