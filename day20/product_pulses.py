@@ -1,4 +1,5 @@
 import sys
+import math
 
 if len(sys.argv) != 2:
     sys.exit('usage: python product_pulses.py input.txt')
@@ -213,27 +214,28 @@ def button_press(defined_modules, button_press_count, last_memo={}):
         if final_inputs in memo.keys():
             # get the result which is the count then do math to get count similar
             # to method used in the tilting stones puzzle.
-            if (button_press_count % (count + 1) != 0):
-                # do math to find the number of counts before the loop was found, 
-                # then find the number of times it loops, then combine and return 
-                # the final amount
-                print('should print on puzzle input')
-                seen_loop = memo[final_inputs]
-                seen_loop_count, seen_loop_low_count, seen_loop_high_count = seen_loop
-                
-                
 
-                return
+            # assume loop always begins at 0, adjust multipliction by the remainder of the loop
+            len_loop = count + 1
+            remainder = button_press_count % len_loop
+            # from remainder grab the reverse lookup to then get the count of low and high 
+            # signals that were sent as extra values to add
+            extra_lows_and_highs = memo[reverse_lookup[remainder - 1]]
+            _, extra_lows, extra_highs = extra_lows_and_highs
+            if remainder == 0:
+                extra_lows, extra_highs = 0, 0
+            all_lows = low_count * math.floor(button_press_count / (count + 1)) + extra_lows
+            all_highs = high_count * math.floor(button_press_count / (count + 1)) + extra_highs
+            # something in this is goofed and I'm too tired to debug it now, the two test inputs 
+            # work too which makes it extra annoying
+            print(len(reverse_lookup.keys()), len_loop)
+            return (all_lows * all_highs)
 
-            print('should print on complex input')
-            return (low_count * (button_press_count / (count + 1)) * (high_count * (button_press_count / (count + 1))))
+            # return (low_count * (button_press_count / (count + 1)) * (high_count * (button_press_count / (count + 1))))
         memo[final_inputs] = (count, low_count, high_count)
         for sent_signal in input_history:
             print(sent_signal)
-        print('count = ' + str(count))
         count += 1
-    print(low_count, high_count)
-    print('reached outer return')
     return (low_count * button_press_count * high_count * button_press_count)
 
 
