@@ -170,7 +170,6 @@ for key in modules.keys():
 for key in endpoint_modules.keys():
     modules[key] = endpoint_modules[key]
 
-
 def button_press(defined_modules, button_press_count, last_memo={}):
     # start count at 1 since there is a button pushed
     memo = last_memo
@@ -183,7 +182,7 @@ def button_press(defined_modules, button_press_count, last_memo={}):
             print(defined_modules[key].input_modules)'''
     # q should contain the signals being sent to the different modules that 
     # are in the defined_modules
-    while count < 6:
+    while count < button_press_count:
         # each loop acts as a button press
         low_count += 1
         q = []
@@ -211,32 +210,31 @@ def button_press(defined_modules, button_press_count, last_memo={}):
         # memo the input history as a tuple
         final_inputs = tuple(input_history)
         reverse_lookup[count] = final_inputs
-        if final_inputs in memo.keys():
+        #if final_inputs in memo.keys():
             # get the result which is the count then do math to get count similar
             # to method used in the tilting stones puzzle.
-
             # assume loop always begins at 0, adjust multipliction by the remainder of the loop
-            len_loop = count + 1
-            remainder = button_press_count % len_loop
+            #len_loop = count + 1
+            #remainder = button_press_count % len_loop
             # from remainder grab the reverse lookup to then get the count of low and high 
             # signals that were sent as extra values to add
-            extra_lows_and_highs = memo[reverse_lookup[remainder - 1]]
-            _, extra_lows, extra_highs = extra_lows_and_highs
-            if remainder == 0:
-                extra_lows, extra_highs = 0, 0
-            all_lows = low_count * math.floor(button_press_count / (count + 1)) + extra_lows
-            all_highs = high_count * math.floor(button_press_count / (count + 1)) + extra_highs
+            #if remainder == 0:
+                #extra_lows, extra_highs = 0, 0
+            #else:
+                #extra_lows_and_highs = memo[reverse_lookup[remainder - 1]]
+                #_, extra_lows, extra_highs = extra_lows_and_highs
+            #all_lows = low_count * math.floor(button_press_count / len_loop) + extra_lows
+            #all_highs = high_count * math.floor(button_press_count / len_loop) + extra_highs
             # something in this is goofed and I'm too tired to debug it now, the two test inputs 
             # work too which makes it extra annoying
-            print(len(reverse_lookup.keys()), len_loop)
-            return (all_lows * all_highs)
+            #return (all_lows * all_highs)
 
             # return (low_count * (button_press_count / (count + 1)) * (high_count * (button_press_count / (count + 1))))
         memo[final_inputs] = (count, low_count, high_count)
-        for sent_signal in input_history:
-            print(sent_signal)
+        #for sent_signal in input_history:
+            #print(sent_signal)
         count += 1
-    return (low_count * button_press_count * high_count * button_press_count)
+    return (low_count * high_count)
 
 
 print(button_press(modules, 1000))
