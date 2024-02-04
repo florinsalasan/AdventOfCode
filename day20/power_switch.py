@@ -1,5 +1,4 @@
 import sys
-import math
 
 if len(sys.argv) != 2:
     sys.exit('usage: python product_pulses.py input.txt')
@@ -16,6 +15,7 @@ class broadcast:
         self.title = items[0]
         separator = items.index('->')
         self.destinations = items[separator + 1:]
+        self.inputs = []
 
     def send_signal(self):
         # Only sends when receiving a signal from the button press, button press
@@ -27,6 +27,9 @@ class broadcast:
 
     def receive_signal(self, input_signal):
         return
+
+    def receive_input(self, inputted_input):
+        self.inputs.append(inputted_input)
 
     def __str__(self):
         return 'broadcast: ' + self.input_str
@@ -192,4 +195,7 @@ for key in endpoint_modules.keys():
 
 # work backwords from the rx end module to the modules feeding in, honestly
 # I don't get how this will ever proc since this seemingly loops the same 3 states,
-# and there would be no way for that to ever change
+# and there would be no way for that to ever change unless I'm being giga dumb
+# Add in a prop for all classes of their inputs, then have a method to add 
+# each one, going to do this reverse order somehow someway, ie instead of pressing
+# the button going to 'send' a signal from 'rx' to it's inputs and so on
