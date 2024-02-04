@@ -193,9 +193,12 @@ for key in modules.keys():
 for key in endpoint_modules.keys():
     modules[key] = endpoint_modules[key]
 
-# work backwords from the rx end module to the modules feeding in, honestly
-# I don't get how this will ever proc since this seemingly loops the same 3 states,
-# and there would be no way for that to ever change unless I'm being giga dumb
-# Add in a prop for all classes of their inputs, then have a method to add 
-# each one, going to do this reverse order somehow someway, ie instead of pressing
-# the button going to 'send' a signal from 'rx' to it's inputs and so on
+# I think I realize why the memoization approach didn't work in part1 for the
+# puzzle input, the circuit must have not actually looped over the same 3-4 states
+# forever. Which would explain why letting it iterate 1000 times gave an answer
+# roughly twice as large as the memo 'solution'
+
+# Which means 'rx' must eventually fire and so can work backwards from it 
+# kindof. Basically add the module that feeds into each module as a prop, 
+# find the number of presses it takes to get a valid input for each and do
+# lcm to get the final answer as you build back towards the 'rx' module.
