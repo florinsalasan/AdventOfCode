@@ -21,17 +21,29 @@ WIDTH = len(newline_removed[0])
 
 
 def walk(garden_grid, starting_coord, steps):
+    # If there are an even number of steps remaining, the space is a
+    # valid space due to backtracking being available and only 4 cardinal
+    # directions not allowing for a diagonal movement
     end_points = set()
+    seen = {}
     q = [(starting_coord, steps)]
     while q:
-        curr = q.pop(0)
-        if curr[1] == 0:
-            end_points.add(curr[0])
+        curr_coord, curr_steps = q.pop(0)
+        if curr_coord in seen:
             continue
-        new_paths = viable_paths(newline_removed, curr[0])
+        else:
+            seen[curr_coord] = True
+            if curr_steps % 2 == 0:
+                end_points.add(curr_coord)
+
+        if curr_steps == 0:
+            end_points.add(curr_coord)
+            continue
+
+        new_paths = viable_paths(newline_removed, curr_coord)
         stepped_paths = []
         for path in new_paths:
-            stepped_paths.append((path, curr[1] - 1))
+            stepped_paths.append((path, curr_steps - 1))
         q += stepped_paths
 
     return end_points
@@ -62,5 +74,5 @@ def in_bounds(coord):
     return True
 
 
-coords = walk(newline_removed, starting_coord, 6)
+coords = walk(newline_removed, starting_coord, 64)
 print(len(coords))
