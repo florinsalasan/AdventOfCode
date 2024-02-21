@@ -20,16 +20,21 @@ HEIGHT = len(newline_removed)
 WIDTH = len(newline_removed[0])
 
 
-# Finding the starting coord worked for test
-# make a pathing function that takes in the grid, along with the remaining
-# steps. need a way to check surrounding tiles if they are not a rock
-def walk(garden_grid, starting_coord, steps_remaining):
-    if steps_remaining == 0:
-        print(starting_coord)
-        return starting_coord
-    next_steps = viable_paths(garden_grid, starting_coord)
-    for step in next_steps:
-        walk(garden_grid, step, steps_remaining - 1)
+def walk(garden_grid, starting_coord, steps):
+    end_points = set()
+    q = [(starting_coord, steps)]
+    while q:
+        curr = q.pop(0)
+        if curr[1] == 0:
+            end_points.add(curr[0])
+            continue
+        new_paths = viable_paths(newline_removed, curr[0])
+        stepped_paths = []
+        for path in new_paths:
+            stepped_paths.append((path, curr[1] - 1))
+        q += stepped_paths
+
+    return end_points
 
 
 def viable_paths(garden_grid, starting_coord):
@@ -44,9 +49,9 @@ def viable_paths(garden_grid, starting_coord):
     viable_coords = []
     x, y = starting_coord[0], starting_coord[1]
     for key in directions.keys():
-        xd, xy = x + directions[key][0], y + directions[key][1]
-        if in_bounds((xd, xy)):
-            viable_coords.append((xd, xy))
+        dx, dy = x + directions[key][0], y + directions[key][1]
+        if in_bounds((dx, dy)) and garden_grid[dy][dx] != '#':
+            viable_coords.append((dx, dy))
     return viable_coords
 
 
@@ -58,4 +63,4 @@ def in_bounds(coord):
 
 
 coords = walk(newline_removed, starting_coord, 6)
-print('coords: ' + str(coords))
+print(len(coords))
