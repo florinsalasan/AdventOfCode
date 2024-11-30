@@ -1,7 +1,7 @@
 # My Advent of Code solutions
 
-I wrote the solutions for 2023 up to day 21 in python, I'm panning on using a
-different language for 2024.
+I wrote the solutions for 2023 up to day 21 in python, I'm panning on using ocaml
+for 2024.
 
 ### How to use
 
