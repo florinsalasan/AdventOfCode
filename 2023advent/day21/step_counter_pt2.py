@@ -66,4 +66,3 @@ print(WIDTH)  # 131
 print(26501365 // WIDTH)  # 202300
 print(26501365 % WIDTH)  # 65
 
-
