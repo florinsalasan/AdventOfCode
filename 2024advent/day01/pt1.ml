@@ -17,7 +17,7 @@ let () =
         let list2 = ref [] in
 
         List.iter (fun line -> 
-            let parts = String.split_on_char ' ' line in
+            let parts = List.filter ((<>) "") (String.split_on_char ' ' line) in
             match parts with 
             | [part1; part2] ->
               list1 := int_of_string part1 :: !list1;
