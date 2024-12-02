@@ -1,1 +1,5 @@
 **/*.txt
+
+2024advent/*/*
+!2024advent/*/*.ml
+!2024advent/*/*.py
