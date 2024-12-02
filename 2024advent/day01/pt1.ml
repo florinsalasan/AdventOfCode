@@ -1,5 +1,3 @@
-open Str
-
 let () =
 
     if Array.length Sys.argv <> 2 then
@@ -19,7 +17,7 @@ let () =
         let list2 = ref [] in
 
         List.iter (fun line -> 
-            let parts = Str.(split (regexp " ") line) in
+            let parts = String.split_on_char ' ' line in
             match parts with 
             | [part1; part2] ->
               list1 := int_of_string part1 :: !list1;
