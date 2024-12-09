@@ -1,4 +1,5 @@
 **/*.txt
+**/*.csv
 
 2024advent/*/*
 !2024advent/*/*.ml
