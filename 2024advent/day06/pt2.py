@@ -24,6 +24,7 @@ EAST = 1
 SOUTH = 2
 WEST = 3
 
+start_direction = NORTH
 curr_direction = NORTH
 
 # Collect the vertical lists at all x_idxs, should help things speed up a bit,
@@ -110,7 +111,7 @@ def explore(guard_position, start_direction):
             tiles_covered.add((guard_position["x"], guard_position["y"]))
             move(curr_direction)
 
-    # This counts the last tille
+    # This counts the last tile
     tiles_covered.add((guard_position["x"], guard_position["y"]))
     return tiles_covered
 
@@ -120,69 +121,63 @@ possible_obstruction_locations.remove((INITIAL_X, INITIAL_Y))
 
 
 def find_blockages(start_direction):
+    valid_blockage_locations = []
     curr_direction = start_direction
     counted = 0
-    for location in list(possible_obstruction_locations):
+    print(len(possible_obstruction_locations))
+    for location in set(possible_obstruction_locations):
         # Start by adding an obstruction in the given location
         x, y = location
+        # print("Obstruction location: ", x, " ", y)
+        # print("=======")
         vertical_movement[x][y] = '#'
         listed_lines[y][x] = '#'
+        # print(listed_lines[y][x] == '#')
 
         tiles_found = set()
-        path_for_second_guard_to_follow = []
-        move_trailing_guard = False
-
-        trailing_guard = {"x": INITIAL_X, "y": INITIAL_Y}
-        curr_follow_position = 0
+        curr_direction = start_direction
 
         looped = False
         while (guard_position["x"] > 0 and
                guard_position["y"] > 0 and
                guard_position["x"] < WIDTH - 1 and
-               guard_position["y"] < HEIGHT - 1) and not looped:
+               guard_position["y"] < HEIGHT - 1 and
+               not looped):
 
+            # print("Guard position: ", guard_position)
             if curr_direction == NORTH:
                 # go into the vertical_movement dict, at x, and decrement the y
                 # to move upwards
                 next_position = (vertical_movement[guard_position["x"]]
                                  [guard_position["y"] - 1])
+                next_coords = (guard_position["x"], guard_position["y"] - 1)
             elif curr_direction == SOUTH:
                 # go into the vertical_movement dict, at x, and increment the y
                 # to move downwards
                 next_position = (vertical_movement[guard_position["x"]]
                                  [guard_position["y"] + 1])
+                next_coords = (guard_position["x"], guard_position["y"] + 1)
             elif curr_direction == WEST:
                 next_position = lines[guard_position["y"]][guard_position["x"] - 1]
+                next_coords = (guard_position["x"] - 1, guard_position["y"])
             elif curr_direction == EAST:
                 next_position = lines[guard_position["y"]][guard_position["x"] + 1]
+                next_coords = (guard_position["x"] + 1, guard_position["y"])
 
-            if next_position == '#':
+            # print("next_position: ", next_position)
+            if next_position == '#' or (next_coords[0], next_coords[1]) == location:
                 curr_direction = (curr_direction + 1) % 4
-"""
-WHEN CHECKING IF INTERSECTING OR LOOPING, USE THE DIRECTION TO DETERMINE IF IN 
-AN ACTUAL LOOP VS JUST CROSSING, DOESN'T HELP NOW SINCE I'M UNDERCOUNTING 
-ANYWAYS BUT THIS SHOULD WORK
-"""
-
             else:
-                tiles_found.add((guard_position["x"], guard_position["y"]))
-                path_for_second_guard_to_follow.append((guard_position["x"], guard_position["y"]))
-                if move_trailing_guard:
-                    trailing_guard["x"] = path_for_second_guard_to_follow[curr_follow_position][0]
-                    trailing_guard["y"] = path_for_second_guard_to_follow[curr_follow_position][1]
-                    curr_follow_position += 1
-                    if trailing_guard["x"] == guard_position["x"] and trailing_guard["y"] == guard_position["y"]:
-                        print("Trailing: ", trailing_guard, " Guard: ", guard_position)
-                        looped = True
-                    move_trailing_guard = False
-                else:
-                    move_trailing_guard = True
+                if (guard_position["x"], guard_position["y"], curr_direction) in tiles_found:
+                    looped = True
+                tiles_found.add((guard_position["x"], guard_position["y"], curr_direction))
                 move(curr_direction)
 
         if looped:
             counted += 1
+            valid_blockage_locations.append(location)
 
-        print("Looped: ", looped)
+        # print("Looped: ", looped)
 
         # End by removing the obstruction before looping again
         # Reset guard_position
@@ -192,6 +187,9 @@ ANYWAYS BUT THIS SHOULD WORK
         guard_position["y"] = INITIAL_Y
 
     print("Valid blockages: ", counted)
+    # print("The blockage locations: ", valid_blockage_locations)
 
 
 find_blockages(curr_direction)
+# This is off by one ahhhhhhhh whyyyyyy it works fine on the sample input
+# and it's off in the puzzle input
