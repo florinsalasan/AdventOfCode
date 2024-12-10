@@ -7,7 +7,7 @@
 import sys
 
 if (len(sys.argv) != 2):
-    sys.exit('Usage: python3 pt1.py puzzle_input')
+    sys.exit('Usage: python pt1.py puzzle_input')
 with open(sys.argv[1]) as open_file:
     lines = open_file.readlines()
 
@@ -28,7 +28,8 @@ start_direction = NORTH
 curr_direction = NORTH
 
 # Collect the vertical lists at all x_idxs, should help things speed up a bit,
-# Maybe easier edge detection this way too
+# Maybe easier edge detection this way too honestly pretty useless,
+# Should've just worked with the normal 2D grid
 vertical_movement = {}
 guard_position = {"x": 0, "y": 0}
 
@@ -62,7 +63,6 @@ def move(direction):
 
 for y_idx, line in enumerate(lines):
     line = list(line)[:-1]
-    # print(line)
     for x_idx, value in enumerate(line):
         if x_idx in vertical_movement:
             vertical_movement[x_idx].append(value)
@@ -73,13 +73,8 @@ for y_idx, line in enumerate(lines):
             guard_position["x"] = x_idx
             guard_position["y"] = y_idx
 
-# print('\n ========= \n')
-
 INITIAL_X = guard_position["x"]
 INITIAL_Y = guard_position["y"]
-
-# for key in sorted(vertical_movement.keys()):
-    # print(vertical_movement[key])
 
 
 def explore(guard_position, start_direction):
@@ -124,18 +119,18 @@ def find_blockages(start_direction):
     valid_blockage_locations = []
     curr_direction = start_direction
     counted = 0
-    print(len(possible_obstruction_locations))
     for location in set(possible_obstruction_locations):
         # Start by adding an obstruction in the given location
         x, y = location
-        # print("Obstruction location: ", x, " ", y)
-        # print("=======")
         vertical_movement[x][y] = '#'
         listed_lines[y][x] = '#'
-        # print(listed_lines[y][x] == '#')
 
+        # Ensure that the guard starts from the normal starting location
+        # every time the loop is run
         tiles_found = set()
         curr_direction = start_direction
+        guard_position["x"] = INITIAL_X
+        guard_position["y"] = INITIAL_Y
 
         looped = False
         while (guard_position["x"] > 0 and
@@ -144,7 +139,6 @@ def find_blockages(start_direction):
                guard_position["y"] < HEIGHT - 1 and
                not looped):
 
-            # print("Guard position: ", guard_position)
             if curr_direction == NORTH:
                 # go into the vertical_movement dict, at x, and decrement the y
                 # to move upwards
@@ -164,7 +158,6 @@ def find_blockages(start_direction):
                 next_position = lines[guard_position["y"]][guard_position["x"] + 1]
                 next_coords = (guard_position["x"] + 1, guard_position["y"])
 
-            # print("next_position: ", next_position)
             if next_position == '#' or (next_coords[0], next_coords[1]) == location:
                 curr_direction = (curr_direction + 1) % 4
             else:
@@ -172,24 +165,17 @@ def find_blockages(start_direction):
                     looped = True
                 tiles_found.add((guard_position["x"], guard_position["y"], curr_direction))
                 move(curr_direction)
+                print((guard_position["x"], guard_position["y"], curr_direction))
 
         if looped:
             counted += 1
             valid_blockage_locations.append(location)
 
-        # print("Looped: ", looped)
-
         # End by removing the obstruction before looping again
-        # Reset guard_position
         vertical_movement[x][y] = '.'
         listed_lines[y][x] = '.'
-        guard_position["x"] = INITIAL_X
-        guard_position["y"] = INITIAL_Y
 
     print("Valid blockages: ", counted)
-    # print("The blockage locations: ", valid_blockage_locations)
 
 
 find_blockages(curr_direction)
-# This is off by one ahhhhhhhh whyyyyyy it works fine on the sample input
-# and it's off in the puzzle input
