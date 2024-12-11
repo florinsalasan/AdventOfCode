@@ -27,7 +27,7 @@ def find_antinodes(antenna_and_their_positions):
     for freq in antenna_and_their_positions.keys():
         antennas = antenna_and_their_positions[freq]
         for i in range(len(antennas)):
-            for j in range(i, len(antennas)):
+            for j in range(i + 1, len(antennas)):
                 diff_x = antennas[i][0] - antennas[j][0]
                 diff_y = antennas[i][1] - antennas[j][1]
                 
@@ -35,48 +35,20 @@ def find_antinodes(antenna_and_their_positions):
                     print("same y_idx")
                 if diff_x == 0:
                     print("same x_idx")
-                # Surely there's a better way
-                if diff_y > 0 and diff_x > 0:
-                    # antenna j would be to the left and up from antenna i
-                    if (antennas[j][0] - diff_x >= 0 and
-                            antennas[j][1] - diff_y >= 0):
-                        antinode_positions.add((antennas[j][0] - diff_x,
-                                                antennas[j][1] - diff_y))
-                    if (antennas[i][0] + diff_x < WIDTH and
-                            antennas[i][1] + diff_y < HEIGHT):
-                        antinode_positions.add((antennas[i][0] + diff_x,
-                                                antennas[i][1] + diff_y))
-                elif diff_y > 0 and diff_x < 0:
-                    # antenna j would be up and to the right from antenna i
-                    # subtracting a negative should keep this working as expected
-                    if (antennas[j][0] - diff_x < WIDTH and
-                            antennas[j][1] - diff_y >= 0):
-                        antinode_positions.add((antennas[j][0] - diff_x,
-                                                antennas[j][1] - diff_y))
-                    if (antennas[i][0] + diff_x >= 0 and
-                            antennas[i][1] + diff_y < HEIGHT):
-                        antinode_positions.add((antennas[i][0] + diff_x,
-                                                antennas[i][1] + diff_y))
-                elif diff_y < 0 and diff_x < 0:
-                    # antenna j would be down and to the right from antenna i
-                    if (antennas[j][0] - diff_x < WIDTH and
-                            antennas[j][1] - diff_y < HEIGHT):
-                        antinode_positions.add((antennas[j][0] - diff_x,
-                                                antennas[j][1] - diff_y))
-                    if (antennas[i][0] + diff_x >= 0 and
-                            antennas[i][1] + diff_y >= 0):
-                        antinode_positions.add((antennas[i][0] + diff_x,
-                                                antennas[i][1] + diff_y))
-                elif diff_y < 0 and diff_x > 0:
-                    # antenna j would be down and to the left from antenna i
-                    if (antennas[j][0] - diff_x >= 0 and
-                            antennas[j][1] - diff_y < HEIGHT):
-                        antinode_positions.add((antennas[j][0] - diff_x,
-                                                antennas[j][1] - diff_y))
-                    if (antennas[i][0] + diff_x < WIDTH and
-                            antennas[i][1] + diff_y >= 0):
-                        antinode_positions.add((antennas[i][0] + diff_x,
-                                                antennas[i][1] + diff_y))
+
+                behind_i_x = antennas[i][0] + diff_x
+                behind_i_y = antennas[i][1] + diff_y
+
+                ahead_j_x = antennas[j][0] - diff_x
+                ahead_j_y = antennas[j][1] - diff_y
+
+                if (behind_i_x >= 0 and behind_i_x < WIDTH and
+                        behind_i_y >= 0 and behind_i_y < HEIGHT):
+                    antinode_positions.add((behind_i_x, behind_i_y))
+
+                if (ahead_j_x >= 0 and ahead_j_x < WIDTH and
+                        ahead_j_y >= 0 and ahead_j_y < HEIGHT):
+                    antinode_positions.add((ahead_j_x, ahead_j_y))
 
     for position in antinode_positions:
         print(position)
