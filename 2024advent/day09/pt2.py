@@ -39,7 +39,7 @@ for i in range(line_len):
 
     curr_start_idx += int(input_line[i])
 
-print(starting_str)
+# print(starting_str)
 # Want to take right most value and place them into the left most empty block
 # This fills in the empty blocks, now merge find the keys that are not in here
 # to get the sum-product of the data id with the idx that it fills
@@ -57,7 +57,8 @@ for key in range(len(id_data_blocks.keys()) - 1, 0, -1):
         cur_empty_block_len = len(empty_blocks[empty_block_idx])
         # print("Empty len: ", cur_empty_block_len, " empty idx: ",
         #       empty_block_idx, " file len: ", file_len)
-        if cur_empty_block_len >= file_len:
+        if (cur_empty_block_len >= file_len and
+                not empty_blocks[empty_block_idx][0] > id_data_blocks[key][0]):
             # insert file into the block
             # print("Should be inserting hello!")
             # print(" BEGIN INSERT ------------------")
